@@ -2,24 +2,17 @@
 ; 当我按下 Crtl + Shift + V，读取剪贴板内容，以无格式文字粘贴。
 
 ^+v::
-    ; 保存原始剪贴板内容
-    originalClipboard := ClipboardAll()
+    originalClipboard := ClipboardAll  ; 保存剪贴板原始内容（修正函数调用）
+    Clipboard := Clipboard  ; 自动转换为纯文本
     
-    ; 将剪贴板内容转换为纯文本
-    Clipboard := Clipboard
+    ; 等待剪贴板数据就绪（最多等待1秒）
+    ClipWait, 1, 1
     
-    ; 等待剪贴板就绪（最多等待 0.5 秒）
-    ClipWait 0.5
+    ; 执行无格式粘贴
+    Send, ^v
     
-    ; 发送 Ctrl+V 粘贴
-    Send ^v
-    
-    ; 短暂等待确保粘贴完成
-    Sleep 50
-    
-    ; 恢复原始剪贴板内容
+    ; 短暂延迟后恢复剪贴板
+    Sleep, 150
     Clipboard := originalClipboard
-    
-    ; 清理内存
-    originalClipboard := ""
+    originalClipboard := ""  ; 释放内存
 return
