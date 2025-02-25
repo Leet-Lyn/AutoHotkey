@@ -1,2 +1,0 @@
-cd e:\Documents\Creations\Scripts\Python\
-AAA

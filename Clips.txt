@@ -1,0 +1,9 @@
+pwsh
+cd e:\Documents\Creations\Scripts\Python\
+git clone
+git add . && git commit -m "updated" && git push
+
+剪贴板恢复改进：
+    使用ClipboardAll完整保存剪贴板状态
+添加加密选项：
+支持多格式内容：
