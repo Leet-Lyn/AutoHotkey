@@ -1,8 +1,8 @@
 ﻿; 请帮我写个 Autohotkey 脚本。
-; 当我按下 Crtl + Shift + C，读取并显示当前目录下Clips.txt。根据后续选择写入剪贴板。再触发一次 Ctrl + V，粘贴。
-; 按下 Crtl + Shift + X，触发一次 Ctrl + C，将当前窗体可复制（块选）内容，写入剪贴板。并写入当前目录下Clips.txt，添加为末尾新的行。
+; 当我按下 Alt + C，读取并显示当前目录下Clips.txt。根据后续选择写入剪贴板。再触发一次 Ctrl + V，粘贴。
+; 按下 Alt + X，触发一次 Ctrl + C，将当前窗体可复制（块选）内容，写入剪贴板。并写入当前目录下Clips.txt，添加为末尾新的行。
 
-^+c::
+!c::
     WinGet, activeHwnd, ID, A
     clipsFile := A_ScriptDir "\Clips.txt"
     
@@ -77,7 +77,7 @@ ClipSelected:
     Send ^v
     Return
 
-^+x::
+!x::
     WinGet, originalHwnd, ID, A
     ClipboardBackup := ClipboardAll
     

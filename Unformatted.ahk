@@ -1,7 +1,7 @@
 ﻿; 请帮我写个 Autohotkey 脚本。
-; 当我按下 Crtl + Shift + V，读取剪贴板内容，以无格式文字粘贴。
+; 当我按下 Alt + V，读取剪贴板内容，以无格式文字粘贴。
 
-^+v::
+!v::
     originalClipboard := ClipboardAll  ; 保存剪贴板原始内容（修正函数调用）
     Clipboard := Clipboard  ; 自动转换为纯文本
     
