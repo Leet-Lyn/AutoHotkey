@@ -3,3 +3,5 @@ cd e:\Documents\Creations\Scripts\Python\
 git clone
 git add . && git commit -m "updated" && git push
 
+127.0.0.1:10809
+cd e:\Documents\Creations\Scripts\Python\
