@@ -1,6 +1,6 @@
 ﻿; 请帮我写个 Autohotkey 脚本。
 ; 当我按下 Alt + C，读取并显示当前目录下Clips.txt。根据后续选择写入剪贴板。再触发一次 Ctrl + V，粘贴。
-; 按下 Alt + X，触发一次 Ctrl + C，将当前窗体可复制（块选）内容，写入剪贴板。并写入当前目录下Clips.txt，添加为末尾新的行。
+; 按下 Alt + X，将目前剪贴板内容直接写入当前目录下Clips.txt，添加为末尾新的行。
 
 !c::
     WinGet, activeHwnd, ID, A
@@ -77,56 +77,46 @@ ClipSelected:
     Send ^v
     Return
 
+; 修改后的Alt+X热键：直接保存剪贴板内容
 !x::
-    WinGet, originalHwnd, ID, A
-    ClipboardBackup := ClipboardAll
+    clipsFile := A_ScriptDir "\Clips.txt"
+    originalClipboard := ClipboardAll  ; 备份原始剪贴板内容
     
-    Clipboard := ""
-    Send ^c
-    ClipWait, 2, 1  ; 延长等待时间
-    
-    if (Clipboard = "") {
-        ToolTip 未捕获到有效内容!
-        SetTimer, RemoveXToolTip, 1500
-        Clipboard := ClipboardBackup
-        return
-    }
-    
+    ; 清理剪贴板内容
     cleanContent := RegExReplace(Clipboard, "[\r\n]+", "`n")
     cleanContent := Trim(cleanContent, " `t`n`r")
     
+    ; 空内容检查
     if (StrLen(cleanContent) < 1) {
-        ToolTip 内容为空未保存!
-        SetTimer, RemoveXToolTip, 1500
-        Clipboard := ClipboardBackup
+        ToolTip 剪贴板内容为空!
+        SetTimer, RemoveAddToolTip, 1500
         return
     }
     
-    clipsFile := A_ScriptDir "\Clips.txt"
-    
-    ; 改进重复检测
-    FileRead, existingContent, %clipsFile%
-    existingContent := "`n" existingContent "`n"  ; 确保前后有换行符
-    If InStr(existingContent, "`n" cleanContent "`n")
+    ; 重复内容检测
+    IfExist, %clipsFile%
     {
-        ToolTip 已存在相同内容!
-        SetTimer, RemoveXToolTip, 1500
-        Clipboard := ClipboardBackup
-        return
+        FileRead, existingContent, %clipsFile%
+        existingContent := "`n" existingContent "`n"  ; 添加首尾换行符方便匹配
+        If InStr(existingContent, "`n" cleanContent "`n")
+        {
+            ToolTip 已存在相同内容!
+            SetTimer, RemoveAddToolTip, 1500
+            return
+        }
     }
     
-    ; 改进写入方式
+    ; 写入文件
     FileAppend, %cleanContent%`n, %clipsFile%, UTF-8
     
-    Clipboard := ClipboardBackup
-    WinActivate, ahk_id %originalHwnd%
+    ; 恢复剪贴板并提示
+    Clipboard := originalClipboard
     ToolTip 已保存内容!
-    SetTimer, RemoveXToolTip, 1500
+    SetTimer, RemoveAddToolTip, 1500
     Return
 
-; 独立的ToolTip移除标签
 RemoveClipToolTip:
-RemoveXToolTip:
+RemoveAddToolTip:
     ToolTip
     SetTimer, %A_ThisLabel%, Off
     Return
