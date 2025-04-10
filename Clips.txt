@@ -2,5 +2,7 @@ pwsh
 cd e:\Documents\Creations\Scripts\Python\
 git clone
 git add . && git commit -m "updated" && git push
-
 wsl --shutdown
+S:\Documents
+S:\Documents
+S:\Documents
