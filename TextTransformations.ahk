@@ -4,10 +4,12 @@
 ; 1. 将剪贴板内的文字，每个单词首字母大写，其余小写。修改后再次写入剪贴板。
 ; 2. 将剪贴板内的文字，每个单词首字母大写，但虚词小写（a, an, the, and, or, for, nor, at, by, for, in, of, off, on, out, to, up, with, without, from, into, onto, over, upon, via, as）。修改后再次写入剪贴板。
 ; 3. 将剪贴板内文字，汉字、英文、或数字）用空格隔开。修改后再次写入剪贴板。
-; 4. 对于 ed2k 开头的链接，读取第 3 个“|”之后，至第 5 个“|”之前的字段，写入剪贴板。
-; 5. 对于 magnet 开头的链接 ，读取 “magnet:?xt=urn:btih:”之后，至“&dn”之前的字段，写入剪贴板。
-; 6. 将将剪贴板内的文字，所有半角标点符号（空格（ ），逗号（,），波浪号（~），冒号（:），分号（;），感叹号（!），问号（?），百分号（%），加号（+），减号（-），等号（=），斜杠（/），反斜杠（\），引号（""），括号（()），大于号（>），小于号（<）替换为全角符号（空格（　），逗号（，），波浪号（～），冒号（：），分号（；），感叹号（！），问号（？），百分号（％），加号（＋），减号（－），等号（＝），斜杠（／），反斜杠（＼），引号（“”），括号（（）），大于号（〉），小于号（〈））。
-; 7：删除“（Via：”之后的文字。此后新生成的文字从第21个字符至末尾删除。如果不足21位，则保留，写入剪贴板。
+; 4：将剪贴板内的汉字繁体中文转为简体中文。
+; 5. 对于 ed2k 开头的链接，读取第 3 个“|”之后，至第 5 个“|”之前的字段，写入剪贴板。
+; 6. 对于 magnet 开头的链接 ，读取 “magnet:?xt=urn:btih:”之后，至“&dn”之前的字段，写入剪贴板。
+; 7. 将将剪贴板内的文字，所有半角标点符号（空格（ ），逗号（,），波浪号（~），冒号（:），分号（;），感叹号（!），问号（?），百分号（%），加号（+），减号（-），等号（=），斜杠（/），反斜杠（\），引号（""），括号（()），大于号（>），小于号（<）替换为全角符号（空格（　），逗号（，），波浪号（～），冒号（：），分号（；），感叹号（！），问号（？），百分号（％），加号（＋），减号（－），等号（＝），斜杠（／），反斜杠（＼），引号（“”），括号（（）），大于号（〉），小于号（〈））。
+; 8：删除“（Via：”之后的文字。此后新生成的文字从第21个字符至末尾删除。如果不足21位，则保留，写入剪贴板。
+
 
 !t::
     ; 备份剪贴板并验证文本
@@ -19,12 +21,13 @@
         return
     }
 
-    ; 创建单选按钮界面（新增第6项）
+    ; 创建单选按钮界面（更新为8个选项）
     Gui, New
     Gui, Add, Text,, 请选择处理方式：
     Gui, Add, Radio, vAction Checked, 每个单词首字母大写
     Gui, Add, Radio,, 虚词小写处理
     Gui, Add, Radio,, 中英数分隔
+    Gui, Add, Radio,, 繁体转简体
     Gui, Add, Radio,, 提取 ed2k 字段
     Gui, Add, Radio,, 提取 Magnet 哈希
     Gui, Add, Radio,, 半角转全角标点
@@ -59,8 +62,11 @@ Button确定:
             processedText := RegExReplace(processedText, "(\d)([a-zA-Z])", "$1 $2")
             processedText := RegExReplace(processedText, "\s+", " ")
             processedText := Trim(processedText)
+
+        Case 4:  ; 繁体转简体
+            processedText := ConvertToSimplifiedChinese(processedText)
         
-        Case 4:  ; ed2k 处理
+        Case 5:  ; ed2k 处理
             if (SubStr(processedText, 1, 5) = "ed2k:")
             {
                 arr := StrSplit(processedText, "|")
@@ -78,7 +84,7 @@ Button确定:
                 processedText := originalClipboard
             }
         
-        Case 5:  ; Magnet 处理
+        Case 6:  ; Magnet 处理
             if RegExMatch(processedText, "i)^magnet:\?xt=urn:btih:([^&]+)", match)
                 processedText := match1
             else
@@ -87,7 +93,7 @@ Button确定:
                 processedText := originalClipboard
             }
 
-        Case 6:  ; 半角转全角标点
+        Case 7:  ; 半角转全角标点
             symbols := { " ": "　", ",": "，", "~": "～", ":": "：", ";": "；"
                        , "!": "！", "?": "？", "%": "％", "+": "＋", "-": "－"
                        , "=": "＝", "/": "／", "\": "＼", "(": "（", ")": "）"
@@ -99,10 +105,9 @@ Button确定:
             While (pos := InStr(processedText, """", false, pos))
             {
                 quoteCount++
-                ; 交替替换左右引号
                 replacement := (Mod(quoteCount, 2) = 1) ? "“" : "”"
                 processedText := SubStr(processedText, 1, pos-1) . replacement . SubStr(processedText, pos+1)
-                pos += StrLen(replacement)  ; 跳过已替换内容
+                pos += StrLen(replacement)
             }
             
             ; 处理其他符号
@@ -112,10 +117,8 @@ Button确定:
                 processedText := RegExReplace(processedText, escaped, full)
             }
 
-
-        Case 7:  ; 删除Via并截断
-            ; 处理中文/英文格式的Via标记
-            viaPatterns := ["（Via：", "(Via:"]  ; 支持中文全角括号和英文半角括号
+        Case 8:  ; 删除Via并截断
+            viaPatterns := ["（Via：", "(Via:"]
             for _, pattern in viaPatterns
             {
                 if (pos := InStr(processedText, pattern))
@@ -125,19 +128,19 @@ Button确定:
                 }
             }
             
-            ; 智能截断（保留前20个有效字符）
-            processedText := RegExReplace(processedText, "\s+", " ")  ; 合并多余空格
+            processedText := RegExReplace(processedText, "\s+", " ")
             processedText := Trim(processedText)
-            if (StrLen(processedText) > 20)  ; 修复缺少的右括号
+            if (StrLen(processedText) > 20)
             {
-                processedText := SubStr(processedText, 1, 20) . "..."  ; 添加省略号提示截断
+                processedText := SubStr(processedText, 1, 20) . "..."
             }
+
     }
 
     ; 更新剪贴板并自动粘贴
     Clipboard := processedText
     Sleep 150
-    Send, ^v  ; 自动执行粘贴操作
+    Send, ^v
 
     ; 可选：3秒后恢复原内容
     ; SetTimer, RestoreClipboard, -3000
@@ -147,6 +150,44 @@ return
 RestoreClipboard:
     Clipboard := originalClipboard
 return
+
+; 简繁转换函数
+ConvertToSimplifiedChinese(text) {
+    ; 参数设置
+    flags := 0x2000000  ; LCMAP_SIMPLIFIED_CHINESE
+    locale := 0x0804     ; 简体中文
+    
+    ; 计算字符长度（UTF-16编码）
+    charCount := StrLen(text)
+    
+    ; 准备缓冲区（双倍长度保险）
+    bufSize := (charCount + 1) * 4  ; 每个字符2字节 + 缓冲区溢出保护
+    VarSetCapacity(srcBuf, bufSize, 0)
+    VarSetCapacity(destBuf, bufSize, 0)
+    
+    ; 写入源字符串（直接使用Unicode）
+    StrPut(text, &srcBuf, charCount + 1, "UTF-16")
+    
+    ; 调用系统API（使用宽字符版本）
+    ret := DllCall("Kernel32.dll\LCMapStringW"
+        , "UInt", locale    ; 强制使用简体中文区域
+        , "UInt", flags
+        , "Ptr", &srcBuf
+        , "Int", charCount
+        , "Ptr", &destBuf
+        , "Int", charCount
+        , "Ptr", 0)
+    
+    ; 处理结果
+    if (ret > 0) {
+        return StrGet(&destBuf, ret, "UTF-16")
+    }
+    else {
+        ; 显示错误信息但继续执行
+        MsgBox 0x40000, 转换错误, 简繁转换失败，错误代码：%A_LastError%
+        return text
+    }
+}
 
 GuiClose:
     Gui, Destroy
