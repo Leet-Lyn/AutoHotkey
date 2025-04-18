@@ -1,5 +1,5 @@
 ﻿; 请帮我写个 Autohotkey 脚本。
-; 当我按下 Alt + T，读取剪贴板内容。
+; 当我按下 Alt + v，读取剪贴板内容。
 ; 弹出图形界面，可作选择：
 ; 1. 将剪贴板内的文字，每个单词首字母大写，其余小写。修改后再次写入剪贴板。
 ; 2. 将剪贴板内的文字，每个单词首字母大写，但虚词小写（a, an, the, and, or, for, nor, at, by, for, in, of, off, on, out, to, up, with, without, from, into, onto, over, upon, via, as）。修改后再次写入剪贴板。
@@ -10,8 +10,7 @@
 ; 7. 将将剪贴板内的文字，所有半角标点符号（空格（ ），逗号（,），波浪号（~），冒号（:），分号（;），感叹号（!），问号（?），百分号（%），加号（+），减号（-），等号（=），斜杠（/），反斜杠（\），引号（""），括号（()），大于号（>），小于号（<）替换为全角符号（空格（　），逗号（，），波浪号（～），冒号（：），分号（；），感叹号（！），问号（？），百分号（％），加号（＋），减号（－），等号（＝），斜杠（／），反斜杠（＼），引号（“”），括号（（）），大于号（〉），小于号（〈））。
 ; 8：删除“（Via：”之后的文字。此后新生成的文字从第21个字符至末尾删除。如果不足21位，则保留，写入剪贴板。
 
-
-!t::
+!v::
     ; 备份剪贴板并验证文本
     originalClipboard := ClipboardAll
     if !Clipboard is text
@@ -32,6 +31,7 @@
     Gui, Add, Radio,, 提取 Magnet 哈希
     Gui, Add, Radio,, 半角转全角标点
     Gui, Add, Radio,, 删除 Via 并截断
+    Gui, Add, Radio,, 去除文字格式
     Gui, Add, Button, Default w80, 确定
     Gui, Show,, 剪贴板处理工具
 return
@@ -135,6 +135,33 @@ Button确定:
                 processedText := SubStr(processedText, 1, 20) . "..."
             }
 
+        Case 9:  ; 去除文字格式
+            ; 方法1：通过文本中转（适用于大部分场景）
+            Clipboard := Clipboard
+            
+            ; 方法2：更彻底的格式清除（需要等待剪贴板更新）
+            /*
+            tempFile := A_Temp "\~tempClip.txt"
+            FileDelete, %tempFile%
+            RunWait, %ComSpec% /c clip < "%tempFile%",, Hide  ; 清空剪贴板
+            Sleep 100
+            Send, ^c  ; 重新复制（可能需要根据具体应用调整）
+            Sleep 100
+            processedText := Clipboard
+            */
+            
+            ; 等待剪贴板稳定
+            ClipWait, 1, 1
+            if ErrorLevel
+            {
+                MsgBox 无法获取纯文本内容
+                processedText := originalClipboard
+            }
+            else
+            {
+                processedText := Clipboard
+            }
+            
     }
 
     ; 更新剪贴板并自动粘贴

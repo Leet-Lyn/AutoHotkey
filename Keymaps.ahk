@@ -16,6 +16,12 @@
 ; 按下 Alt + 鼠标滚轮向下 发送 End
 !WheelDown::Send {End}
 
+; 同时按下鼠标左键和右键，发送 ESC 键
+~LButton & RButton::
+~RButton & LButton::
+Send, {Esc}
+return
+
 ; 鼠标前进键 (XButton2) 映射为 Ctrl
 XButton2::Send {Ctrl Down}
 XButton2 Up::Send {Ctrl Up}
