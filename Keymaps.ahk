@@ -1,19 +1,19 @@
 ﻿; 请帮我写个 Autohotkey 脚本。
 ; 重新映射些键位。
 
-; 按下 Alt＋鼠标左键，发送 Enter。
+; 按下 Alt＋鼠标左键，发送 Enter 键。
 !LButton::Send {Enter}
 
-; 按下 Alt＋鼠标右键，发送 Del。
+; 按下 Alt＋鼠标右键，发送 Del 键。
 !RButton::Send {Del}
 
-; 按下 Alt＋鼠标中键，发送 Backspace。
+; 按下 Alt＋鼠标中键，发送 Backspace 键。
 !MButton::Send {Backspace}
 
-; 按下 Alt＋鼠标滚轮向上，发送 Home。
+; 按下 Alt＋鼠标滚轮向上，发送 Home 键。
 !WheelUp::Send {Home}
 
-; 按下 Alt＋鼠标滚轮向下，发送 End。
+; 按下 Alt＋鼠标滚轮向下，发送 End 键。
 !WheelDown::Send {End}
 
 ; 同时按下鼠标左键和右键，发送 ESC 键。
@@ -22,52 +22,48 @@
 Send, {Esc}
 return
 
-; 鼠标前进键 (XButton2) 映射为 Ctrl
+; 鼠标前进键 (XButton2)，映射为 Ctrl 键。
 XButton2::Send {Ctrl Down}
 XButton2 Up::Send {Ctrl Up}
 
-; 鼠标后退键 (XButton1) 映射为 Alt
+; 鼠标后退键 (XButton1)，映射为 Alt 键。
 XButton1::Send {Alt Down}
 XButton1 Up::Send {Alt Up}
 
-; 狙击键映射 (XButton3) -> Shift
+; 狙击键映射 (XButton3)，映射为 Shift 键。
 ; XButton3::Send {Shift Down}
 ; XButton3 Up::Send {Shift Up}
 
-; 浏览器功能恢复（需按住Alt时触发）
-; Alt + 前进键 -> 浏览器前进
+; Alt＋前进键，映射为浏览器前进
 !XButton2::Send {Browser_Forward}
 
-; Alt + 后退键 -> 浏览器后退
+; Alt＋后退键，映射为浏览器后退
 !XButton1::Send {Browser_Back}
 
 ; Ctrl＋Esc，映射为虚拟的 F13 键。
 ^Esc::Send {F13}
 
-; Ctrl＋Shift＋X，则依次触发 Home，Shift＋End，Ctrl＋X，删除一行；当我按 Ctrl＋Shift＋C，则依次触发 Home，Shift＋End，Ctrl＋C，复制一行。当我按 Ctrl＋Shift＋V，则将剪贴板内的内容，以无格式文字粘贴。
+; Ctrl＋Shift＋X，映射为删除一行。
 ^+x::
-    SendInput {Home}           ; 移动到行首
-    SendInput +{End}           ; 选中到行尾
-    SendInput ^{x}             ; 剪切选中内容
+    SendInput {Home}
+    SendInput +{End}
+    SendInput ^{x}
 return
+
+; Ctrl＋Shift＋C，映射为复制一行。
 ^+c::
-    SendInput {Home}           ; 移动到行首
-    SendInput +{End}           ; 选中到行尾
-    SendInput ^{c}             ; 复制选中内容
+    SendInput {Home}
+    SendInput +{End}
+    SendInput ^{c}
 return
+
+; Ctrl＋Shift＋V，映射为无格式粘贴。
 ^+v::
-    ; 备份原始剪贴板内容
     originalClipboard := ClipboardAll
-    
-    ; 将剪贴板内容转换为纯文本
-    Clipboard := Clipboard     ; 自动移除格式信息
-    ClipWait, 1                ; 等待剪贴板数据就绪
-    
-    ; 执行普通粘贴操作
+    Clipboard := Clipboard
+    ClipWait, 1
     SendInput ^v
-    
-    ; 短暂延迟后恢复剪贴板内容
     Sleep, 100
     Clipboard := originalClipboard
-    originalClipboard := ""    ; 清空变量释放内存
+    originalClipboard := ""
 return
