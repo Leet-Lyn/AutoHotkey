@@ -1,5 +1,4 @@
 ﻿; 请帮我写个 Autohotkey 脚本。
-; 重新映射些键位。
 
 ; 按下 Alt＋鼠标左键，发送 Enter 键。
 !LButton::Send {Enter}
