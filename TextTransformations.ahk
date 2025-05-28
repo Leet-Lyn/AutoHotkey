@@ -9,7 +9,11 @@
 ; 6. 对于 ed2k 开头的链接，读取第 3 个“|”之后，至第 5 个“|”之前的字段，写入剪贴板。
 ; 7. 对于 magnet 开头的链接 ，读取 “magnet:?xt=urn:btih:”之后，至“&dn”之前的字段，写入剪贴板。
 ; 8. 将将剪贴板内的文字，所有半角标点符号（空格（ ），逗号（,），波浪号（~），冒号（:），分号（;），感叹号（!），问号（?），百分号（%），加号（+），减号（-），等号（=），斜杠（/），反斜杠（\），引号（""），括号（()），大于号（>），小于号（<）替换为全角符号（空格（　），逗号（，），波浪号（～），冒号（：），分号（；），感叹号（！），问号（？），百分号（％），加号（＋），减号（－），等号（＝），斜杠（／），反斜杠（＼），引号（“”），括号（（）），大于号（〉），小于号（〈））。
-; 9：删除“（Via：”之后的文字。此后新生成的文字从第21个字符至末尾删除。如果不足21位，则保留，写入剪贴板。
+; 9. 删除“（Via：”之后的文字。此后新生成的文字从第21个字符至末尾删除。如果不足21位，则保留，写入剪贴板。
+; 10. 将剪贴板内的多行文字，每一行行首增加一个破折号及一个空格。
+; 11. 将剪贴板内的多行文字，每一行行首增加两个空格。
+; 12. 读取剪贴板内的内容，进行升序排序。如果是单行数据，则这组数据（每个数据之间用半角逗号加空格隔开“, ”），对这组数据排序，仍然以半角逗号加空格隔开。如果是多行数据，则这组数据（每一行为一个数据），对这组数据排序，仍然每一行为一个数据。
+; 13. 读取剪贴板内的内容，进行降序排序。如果是单行数据，则这组数据（每个数据之间用半角逗号加空格隔开“, ”），对这组数据排序，仍然以半角逗号加空格隔开。如果是多行数据，则这组数据（每一行为一个数据），对这组数据排序，仍然每一行为一个数据。
 
 !v::
     ; 备份剪贴板并验证文本
@@ -21,18 +25,22 @@
         return
     }
 
-    ; 创建单选按钮界面（更新为8个选项）
+    ; 创建单选按钮界面
     Gui, New
     Gui, Add, Text,, 请选择处理方式：
-    Gui, Add, Radio,vAction Checked, 去除文字格式
-    Gui, Add, Radio,, 每个单词首字母大写
-    Gui, Add, Radio,, 虚词小写处理
-    Gui, Add, Radio,, 中英数分隔
-    Gui, Add, Radio,, 繁体转简体
-    Gui, Add, Radio,, 提取 ed2k 字段
-    Gui, Add, Radio,, 提取 Magnet 哈希
-    Gui, Add, Radio,, 半角转全角标点
-    Gui, Add, Radio,, 删除 Via 并截断
+    Gui, Add, Radio,vAction Checked, 1. 去除文字格式
+    Gui, Add, Radio,, 2. 每个单词首字母大写
+    Gui, Add, Radio,, 3. 虚词小写处理
+    Gui, Add, Radio,, 4. 中英数分隔
+    Gui, Add, Radio,, 5. 繁体转简体
+    Gui, Add, Radio,, 6. 提取 ed2k 字段
+    Gui, Add, Radio,, 7. 提取 Magnet 哈希
+    Gui, Add, Radio,, 8. 半角转全角标点
+    Gui, Add, Radio,, 9. 删除 Via 并截断
+    Gui, Add, Radio,, 10. 行首添加一个破折号及一个空格
+    Gui, Add, Radio,, 11. 行首添加两个空格
+    Gui, Add, Radio,, 12. 数据升序排序
+    Gui, Add, Radio,, 13. 数据降序排序
     Gui, Add, Button, Default w80, 确定
     Gui, Show,, 剪贴板处理工具
 return
@@ -162,7 +170,19 @@ Button确定:
             {
                 processedText := SubStr(processedText, 1, 20) . "..."
             }
-            
+
+        Case 10:  ; 行首添加一个破折号及一个空格
+            processedText := RegExReplace(processedText, "m)^", "- ")
+
+        Case 11:  ; 行首添加两个空格
+            processedText := RegExReplace(processedText, "m)^", "  ")
+
+        Case 12:  ; 升序排序
+            processedText := SortClipboardText(processedText, "Asc")
+
+        Case 13:  ; 降序排序
+            processedText := SortClipboardText(processedText, "Desc")
+
     }
 
     ; 更新剪贴板并自动粘贴
@@ -178,6 +198,52 @@ return
 RestoreClipboard:
     Clipboard := originalClipboard
 return
+
+; 排序功能函数
+SortClipboardText(text, order) {
+    ; 判断内容类型
+    isMultiLine := InStr(text, "`n") ? 1 : 0
+    
+    ; 分割数据
+    if isMultiLine
+        array := StrSplit(text, "`n", "`r")
+    else
+        array := StrSplit(text, ", ")
+    
+    ; 清理数据
+    cleanedArray := []
+    Loop % array.Length()
+    {
+        element := Trim(array[A_Index])
+        if StrLen(element)
+            cleanedArray.Push(element)
+    }
+    
+    ; 执行排序
+    sortedText := Join(cleanedArray, "`n")
+    if (order = "Asc")
+        Sort, sortedText, CL
+    else
+        Sort, sortedText, CL R
+    
+    ; 重组格式
+    sortedArray := StrSplit(sortedText, "`n")
+    if isMultiLine
+        return Join(sortedArray, "`n")
+    else
+        return Join(sortedArray, ", ")
+}
+
+Join(array, delimiter) {
+    result := ""
+    Loop % array.Length()
+    {
+        if (A_Index > 1)
+            result .= delimiter
+        result .= array[A_Index]
+    }
+    return result
+}
 
 ; 简繁转换函数
 ConvertToSimplifiedChinese(text) {
