@@ -14,6 +14,7 @@
 ; 11. 将剪贴板内的多行文字，每一行行首增加两个空格。
 ; 12. 读取剪贴板内的内容，进行升序排序。如果是单行数据，则这组数据（每个数据之间用半角逗号加空格隔开“, ”），对这组数据排序，仍然以半角逗号加空格隔开。如果是多行数据，则这组数据（每一行为一个数据），对这组数据排序，仍然每一行为一个数据。
 ; 13. 读取剪贴板内的内容，进行降序排序。如果是单行数据，则这组数据（每个数据之间用半角逗号加空格隔开“, ”），对这组数据排序，仍然以半角逗号加空格隔开。如果是多行数据，则这组数据（每一行为一个数据），对这组数据排序，仍然每一行为一个数据。
+; 14. 读取剪贴板内的内容，将单行多个数据（每个数据之间用半角逗号加空格隔开“, ”），将这组数据转换成多行数据，并升序排序。每一行为一个数据。
 
 !v::
     ; 备份剪贴板并验证文本
@@ -41,6 +42,7 @@
     Gui, Add, Radio,, 11. 行首添加两个空格
     Gui, Add, Radio,, 12. 数据升序排序
     Gui, Add, Radio,, 13. 数据降序排序
+    Gui, Add, Radio,, 14. 数据分行
     Gui, Add, Button, Default w80, 确定
     Gui, Show,, 剪贴板处理工具
 return
@@ -183,6 +185,34 @@ Button确定:
         Case 13:  ; 降序排序
             processedText := SortClipboardText(processedText, "Desc")
 
+        Case 14:  ; 单行转多行并升序排序
+            ; 检查是否为单行数据
+            if (InStr(processedText, "`n") || InStr(processedText, "`r"))
+            {
+                MsgBox 此功能仅支持单行数据，当前数据包含换行符。
+                processedText := originalClipboard
+            }
+            else
+            {
+                ; 分割数据
+                array := StrSplit(processedText, ", ")
+                
+                ; 清理数据
+                cleanedArray := []
+                for index, element in array
+                {
+                    element := Trim(element)
+                    if (element != "")
+                        cleanedArray.Push(element)
+                }
+                
+                ; 转换为多行文本
+                multiLineText := Join(cleanedArray, "`n")
+                
+                ; 升序排序
+                Sort, multiLineText, CL
+                processedText := multiLineText
+            }
     }
 
     ; 更新剪贴板并自动粘贴
