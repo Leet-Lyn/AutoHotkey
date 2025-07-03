@@ -8,5 +8,5 @@ d:\Downloads\
 http://127.0.0.1:10809
 socks5://127.0.0.1:10808
 :Tabularize /
-![](./.md.files/.avif)
+![](./.md.files/-cover.avif)
 %20

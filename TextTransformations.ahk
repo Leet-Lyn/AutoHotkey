@@ -15,6 +15,11 @@
 ; 12. 读取剪贴板内的内容，进行升序排序。如果是单行数据，则这组数据（每个数据之间用半角逗号加空格隔开“, ”），对这组数据排序，仍然以半角逗号加空格隔开。如果是多行数据，则这组数据（每一行为一个数据），对这组数据排序，仍然每一行为一个数据。
 ; 13. 读取剪贴板内的内容，进行降序排序。如果是单行数据，则这组数据（每个数据之间用半角逗号加空格隔开“, ”），对这组数据排序，仍然以半角逗号加空格隔开。如果是多行数据，则这组数据（每一行为一个数据），对这组数据排序，仍然每一行为一个数据。
 ; 14. 读取剪贴板内的内容，将单行多个数据（每个数据之间用半角逗号加空格隔开“, ”），将这组数据转换成多行数据，并升序排序。每一行为一个数据。
+; 15. 读取剪贴板内的内容，将空格转化为“%20”。
+
+
+; 剪贴板多功能处理工具
+; 快捷键: Alt + V
 
 !v::
     ; 备份剪贴板并验证文本
@@ -29,7 +34,7 @@
     ; 创建单选按钮界面
     Gui, New
     Gui, Add, Text,, 请选择处理方式：
-    Gui, Add, Radio,vAction Checked, 1. 去除文字格式
+    Gui, Add, Radio, vAction Checked, 1. 去除文字格式
     Gui, Add, Radio,, 2. 每个单词首字母大写
     Gui, Add, Radio,, 3. 虚词小写处理
     Gui, Add, Radio,, 4. 中英数分隔
@@ -43,6 +48,7 @@
     Gui, Add, Radio,, 12. 数据升序排序
     Gui, Add, Radio,, 13. 数据降序排序
     Gui, Add, Radio,, 14. 数据分行
+    Gui, Add, Radio,, 15. 空格转URL编码 ; 新增功能
     Gui, Add, Button, Default w80, 确定
     Gui, Show,, 剪贴板处理工具
 return
@@ -58,31 +64,12 @@ Button确定:
     Switch Action
     {
         Case 1:  ; 去除文字格式
-            ; 方法1：通过文本中转（适用于大部分场景）
             Clipboard := Clipboard
-            
-            ; 方法2：更彻底的格式清除（需要等待剪贴板更新）
-            /*
-            tempFile := A_Temp "\~tempClip.txt"
-            FileDelete, %tempFile%
-            RunWait, %ComSpec% /c clip < "%tempFile%",, Hide  ; 清空剪贴板
-            Sleep 100
-            Send, ^c  ; 重新复制（可能需要根据具体应用调整）
-            Sleep 100
-            processedText := Clipboard
-            */
-            
-            ; 等待剪贴板稳定
             ClipWait, 1, 1
             if ErrorLevel
-            {
-                MsgBox 无法获取纯文本内容
                 processedText := originalClipboard
-            }
             else
-            {
                 processedText := Clipboard
-            }
 
         Case 2:  ; 首字母大写
             StringUpper, processedText, processedText, T
@@ -186,7 +173,6 @@ Button确定:
             processedText := SortClipboardText(processedText, "Desc")
 
         Case 14:  ; 单行转多行并升序排序
-            ; 检查是否为单行数据
             if (InStr(processedText, "`n") || InStr(processedText, "`r"))
             {
                 MsgBox 此功能仅支持单行数据，当前数据包含换行符。
@@ -194,10 +180,7 @@ Button确定:
             }
             else
             {
-                ; 分割数据
                 array := StrSplit(processedText, ", ")
-                
-                ; 清理数据
                 cleanedArray := []
                 for index, element in array
                 {
@@ -205,14 +188,14 @@ Button确定:
                     if (element != "")
                         cleanedArray.Push(element)
                 }
-                
-                ; 转换为多行文本
                 multiLineText := Join(cleanedArray, "`n")
-                
-                ; 升序排序
                 Sort, multiLineText, CL
                 processedText := multiLineText
             }
+        
+        ; 新增功能：空格转URL编码
+        Case 15:
+            processedText := StrReplace(processedText, " ", "%20")
     }
 
     ; 更新剪贴板并自动粘贴
@@ -231,16 +214,13 @@ return
 
 ; 排序功能函数
 SortClipboardText(text, order) {
-    ; 判断内容类型
     isMultiLine := InStr(text, "`n") ? 1 : 0
     
-    ; 分割数据
     if isMultiLine
         array := StrSplit(text, "`n", "`r")
     else
         array := StrSplit(text, ", ")
     
-    ; 清理数据
     cleanedArray := []
     Loop % array.Length()
     {
@@ -249,14 +229,12 @@ SortClipboardText(text, order) {
             cleanedArray.Push(element)
     }
     
-    ; 执行排序
     sortedText := Join(cleanedArray, "`n")
     if (order = "Asc")
         Sort, sortedText, CL
     else
         Sort, sortedText, CL R
     
-    ; 重组格式
     sortedArray := StrSplit(sortedText, "`n")
     if isMultiLine
         return Join(sortedArray, "`n")
@@ -277,24 +255,18 @@ Join(array, delimiter) {
 
 ; 简繁转换函数
 ConvertToSimplifiedChinese(text) {
-    ; 参数设置
     flags := 0x2000000  ; LCMAP_SIMPLIFIED_CHINESE
     locale := 0x0804     ; 简体中文
     
-    ; 计算字符长度（UTF-16编码）
     charCount := StrLen(text)
-    
-    ; 准备缓冲区（双倍长度保险）
-    bufSize := (charCount + 1) * 4  ; 每个字符2字节＋缓冲区溢出保护
+    bufSize := (charCount + 1) * 4
     VarSetCapacity(srcBuf, bufSize, 0)
     VarSetCapacity(destBuf, bufSize, 0)
     
-    ; 写入源字符串（直接使用Unicode）
     StrPut(text, &srcBuf, charCount + 1, "UTF-16")
     
-    ; 调用系统API（使用宽字符版本）
     ret := DllCall("Kernel32.dll\LCMapStringW"
-        , "UInt", locale    ; 强制使用简体中文区域
+        , "UInt", locale
         , "UInt", flags
         , "Ptr", &srcBuf
         , "Int", charCount
@@ -302,12 +274,10 @@ ConvertToSimplifiedChinese(text) {
         , "Int", charCount
         , "Ptr", 0)
     
-    ; 处理结果
     if (ret > 0) {
         return StrGet(&destBuf, ret, "UTF-16")
     }
     else {
-        ; 显示错误信息但继续执行
         MsgBox 0x40000, 转换错误, 简繁转换失败，错误代码：%A_LastError%
         return text
     }
