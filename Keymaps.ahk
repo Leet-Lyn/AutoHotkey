@@ -39,16 +39,6 @@ XButton1 Up::Send {Alt Up}
 Send, {Esc}
 return
 
-; 同时按下 XButton1 和鼠标中键，发送“浏览器返回键”。
-XButton1 & MButton::
-    Send {Browser_Back}
-return
-
-; 同时按下 XButton2 和鼠标中键，发送“媒体快进键”。
-; XButton2 & MButton::
-;     Send {Media_Forward}
-; return
-
 ; Ctrl＋Esc，映射为虚拟的 F13 键（Vim 用）。
 ^Esc::Send {F13}
 

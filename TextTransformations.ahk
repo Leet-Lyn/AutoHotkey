@@ -10,13 +10,12 @@
 ; 7. 对于 magnet 开头的链接 ，读取 “magnet:?xt=urn:btih:”之后，至“&dn”之前的字段，写入剪贴板。
 ; 8. 将将剪贴板内的文字，所有半角标点符号（空格（ ），逗号（,），波浪号（~），冒号（:），分号（;），感叹号（!），问号（?），百分号（%），加号（+），减号（-），等号（=），斜杠（/），反斜杠（\），引号（""），括号（()），大于号（>），小于号（<）替换为全角符号（空格（　），逗号（，），波浪号（～），冒号（：），分号（；），感叹号（！），问号（？），百分号（％），加号（＋），减号（－），等号（＝），斜杠（／），反斜杠（＼），引号（“”），括号（（）），大于号（〉），小于号（〈））。
 ; 9. 删除“（Via：”之后的文字。此后新生成的文字从第21个字符至末尾删除。如果不足21位，则保留，写入剪贴板。
-; 10. 将剪贴板内的多行文字，每一行行首增加一个破折号及一个空格。
-; 11. 将剪贴板内的多行文字，每一行行首增加两个空格。
+; 10. 读取剪贴板内的内容，将单行多个数据（每个数据之间用半角逗号加空格隔开“, ”），将这组数据转换成多行数据，每一行为一个数据。
+; 11. 将剪贴板内的多行文字，每一行行首增加两个空格加一个破折号及一个空格。（“  - ”）。
 ; 12. 读取剪贴板内的内容，进行升序排序。如果是单行数据，则这组数据（每个数据之间用半角逗号加空格隔开“, ”），对这组数据排序，仍然以半角逗号加空格隔开。如果是多行数据，则这组数据（每一行为一个数据），对这组数据排序，仍然每一行为一个数据。
 ; 13. 读取剪贴板内的内容，进行降序排序。如果是单行数据，则这组数据（每个数据之间用半角逗号加空格隔开“, ”），对这组数据排序，仍然以半角逗号加空格隔开。如果是多行数据，则这组数据（每一行为一个数据），对这组数据排序，仍然每一行为一个数据。
 ; 14. 读取剪贴板内的内容，将单行多个数据（每个数据之间用半角逗号加空格隔开“, ”），将这组数据转换成多行数据，并升序排序。每一行为一个数据。
 ; 15. 读取剪贴板内的内容，将空格转化为“%20”。
-
 
 ; 剪贴板多功能处理工具
 ; 快捷键: Alt + V
@@ -43,12 +42,11 @@
     Gui, Add, Radio,, 7. 提取 Magnet 哈希
     Gui, Add, Radio,, 8. 半角转全角标点
     Gui, Add, Radio,, 9. 删除 Via 并截断
-    Gui, Add, Radio,, 10. 行首添加一个破折号及一个空格
-    Gui, Add, Radio,, 11. 行首添加两个空格
+    Gui, Add, Radio,, 10. 单行转多行
+    Gui, Add, Radio,, 11. 行首添加"  - "
     Gui, Add, Radio,, 12. 数据升序排序
     Gui, Add, Radio,, 13. 数据降序排序
-    Gui, Add, Radio,, 14. 数据分行
-    Gui, Add, Radio,, 15. 空格转URL编码 ; 新增功能
+    Gui, Add, Radio,, 14. 空格转URL编码
     Gui, Add, Button, Default w80, 确定
     Gui, Show,, 剪贴板处理工具
 return
@@ -160,11 +158,27 @@ Button确定:
                 processedText := SubStr(processedText, 1, 20) . "..."
             }
 
-        Case 10:  ; 行首添加一个破折号及一个空格
-            processedText := RegExReplace(processedText, "m)^", "- ")
+        Case 10:  ; 单行转多行
+            if (InStr(processedText, "`n") || InStr(processedText, "`r"))
+            {
+                MsgBox 此功能仅支持单行数据
+                processedText := originalClipboard
+            }
+            else
+            {
+                array := StrSplit(processedText, ", ")
+                processedText := ""
+                for index, element in array
+                {
+                    element := Trim(element)
+                    if (element != "")
+                        processedText .= element . "`n"
+                }
+                processedText := RTrim(processedText, "`n")
+            }
 
-        Case 11:  ; 行首添加两个空格
-            processedText := RegExReplace(processedText, "m)^", "  ")
+        Case 11:  ; 行首添加"  - "
+            processedText := RegExReplace(processedText, "m)^", "  - ")
 
         Case 12:  ; 升序排序
             processedText := SortClipboardText(processedText, "Asc")
@@ -172,29 +186,7 @@ Button确定:
         Case 13:  ; 降序排序
             processedText := SortClipboardText(processedText, "Desc")
 
-        Case 14:  ; 单行转多行并升序排序
-            if (InStr(processedText, "`n") || InStr(processedText, "`r"))
-            {
-                MsgBox 此功能仅支持单行数据，当前数据包含换行符。
-                processedText := originalClipboard
-            }
-            else
-            {
-                array := StrSplit(processedText, ", ")
-                cleanedArray := []
-                for index, element in array
-                {
-                    element := Trim(element)
-                    if (element != "")
-                        cleanedArray.Push(element)
-                }
-                multiLineText := Join(cleanedArray, "`n")
-                Sort, multiLineText, CL
-                processedText := multiLineText
-            }
-        
-        ; 新增功能：空格转URL编码
-        Case 15:
+        Case 14:  ; 空格转URL编码
             processedText := StrReplace(processedText, " ", "%20")
     }
 
