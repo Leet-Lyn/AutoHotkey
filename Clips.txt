@@ -5,8 +5,9 @@ cd e:\Documents\Creations\Scripts\Python\
 git clone
 git add . && git commit -m "updated" && git push
 192.168.0.100:10811
-http://127.0.0.1:10809
 socks5://127.0.0.1:10808
+http://127.0.0.1:10809
+http://192.168.0.100:10810
 wsl --shutdown
 d:\Downloads\
 %s/ / /g
