@@ -2,20 +2,23 @@
 ; 当我按下 Alt＋v，读取剪贴板内容。
 ; 弹出图形界面，可作选择：
 ; 1.将剪贴板内带格式的文字去除格式。
-; 2. 将剪贴板内的文字，每个单词首字母大写，其余小写。修改后再次写入剪贴板。
-; 3. 将剪贴板内的文字，每个单词首字母大写，但虚词小写（a, an, the, and, or, for, nor, at, by, for, in, of, off, on, out, to, up, with, without, from, into, onto, over, upon, via, as）。修改后再次写入剪贴板。
-; 4. 将剪贴板内文字，汉字、英文、或数字）用空格隔开。修改后再次写入剪贴板。
-; 5：将剪贴板内的汉字繁体中文转为简体中文。
-; 6. 对于 ed2k 开头的链接，读取第 3 个“|”之后，至第 5 个“|”之前的字段，写入剪贴板。
-; 7. 对于 magnet 开头的链接 ，读取 “magnet:?xt=urn:btih:”之后，至“&dn”之前的字段，写入剪贴板。
-; 8. 将将剪贴板内的文字，所有半角标点符号（空格（ ），逗号（,），波浪号（~），冒号（:），分号（;），感叹号（!），问号（?），百分号（%），加号（+），减号（-），等号（=），斜杠（/），反斜杠（\），引号（""），括号（()），大于号（>），小于号（<）替换为全角符号（空格（　），逗号（，），波浪号（～），冒号（：），分号（；），感叹号（！），问号（？），百分号（％），加号（＋），减号（－），等号（＝），斜杠（／），反斜杠（＼），引号（“”），括号（（）），大于号（〉），小于号（〈））。
-; 9. 删除“（Via：”之后的文字。此后新生成的文字从第21个字符至末尾删除。如果不足21位，则保留，写入剪贴板。
-; 10. 读取剪贴板内的内容，将单行多个数据（每个数据之间用半角逗号加空格隔开“, ”），将这组数据转换成多行数据，每一行为一个数据。
-; 11. 将剪贴板内的多行文字，每一行行首增加两个空格加一个破折号及一个空格。（“  - ”）。
-; 12. 读取剪贴板内的内容，进行升序排序。如果是单行数据，则这组数据（每个数据之间用半角逗号加空格隔开“, ”），对这组数据排序，仍然以半角逗号加空格隔开。如果是多行数据，则这组数据（每一行为一个数据），对这组数据排序，仍然每一行为一个数据。
-; 13. 读取剪贴板内的内容，进行降序排序。如果是单行数据，则这组数据（每个数据之间用半角逗号加空格隔开“, ”），对这组数据排序，仍然以半角逗号加空格隔开。如果是多行数据，则这组数据（每一行为一个数据），对这组数据排序，仍然每一行为一个数据。
-; 14. 读取剪贴板内的内容，将单行多个数据（每个数据之间用半角逗号加空格隔开“, ”），将这组数据转换成多行数据，并升序排序。每一行为一个数据。
-; 15. 读取剪贴板内的内容，将空格转化为“%20”。
+; 2. 将剪贴板内的文字，每个单词大写。
+; 3. 将剪贴板内的文字，每个单词小写。
+; 4. 将剪贴板内的文字，每个单词首字母大写，其余小写。
+; 5. 将剪贴板内的文字，每个单词首字母大写，但虚词小写（a, an, the, and, or, for, nor, at, by, for, in, of, off, on, out, to, up, with, without, from, into, onto, over, upon, via, as）。修改后再次写入剪贴板。
+; 6. 将剪贴板内文字，汉字、英文、或数字）用空格隔开。
+; 7：将剪贴板内的汉字繁体中文转为简体中文。
+; 8. 对于 ed2k 开头的链接，截取第 3 个“|”之后，至第 5 个“|”之前的字段。
+; 9. 对于 magnet 开头的链接 ，截取 “magnet:?xt=urn:btih:”之后，至“&dn”之前的字段。
+; 10. 将剪贴板内的文字，所有半角标点符号转为全角标点符号。（空格（ ），逗号（,），波浪号（~），冒号（:），分号（;），感叹号（!），问号（?），百分号（%），加号（+），减号（-），等号（=），斜杠（/），反斜杠（\），引号（""），括号（()），大于号（>），小于号（<）替换为全角符号（空格（　），逗号（，），波浪号（～），冒号（：），分号（；），感叹号（！），问号（？），百分号（％），加号（＋），减号（－），等号（＝），斜杠（／），反斜杠（＼），引号（“”），括号（（）），大于号（〉），小于号（〈））。
+; 11. 删除“（Via：”之后的文字。
+; 12. 删除 64 个字符后的内容。
+; 13. 读取剪贴板内的内容，将单行多个数据（每个数据之间用半角逗号加空格隔开“, ”），将这组数据转换成多行数据，每一行为一个数据。
+; 14. 将剪贴板内的多行文字，每一行行首增加两个空格加一个破折号及一个空格。（“  - ”）。
+; 15. 读取剪贴板内的内容，进行升序排序。如果是单行数据，则这组数据（每个数据之间用半角逗号加空格隔开“, ”），对这组数据排序，仍然以半角逗号加空格隔开。如果是多行数据，则这组数据（每一行为一个数据），对这组数据排序，仍然每一行为一个数据。
+; 16. 读取剪贴板内的内容，进行降序排序。如果是单行数据，则这组数据（每个数据之间用半角逗号加空格隔开“, ”），对这组数据排序，仍然以半角逗号加空格隔开。如果是多行数据，则这组数据（每一行为一个数据），对这组数据排序，仍然每一行为一个数据。
+; 17. 读取剪贴板内的内容，将单行多个数据（每个数据之间用半角逗号加空格隔开“, ”），将这组数据转换成多行数据，并升序排序。每一行为一个数据。
+; 18. 读取剪贴板内的内容，将空格转化为“%20”。
 
 ; 剪贴板多功能处理工具
 ; 快捷键: Alt + V
@@ -34,19 +37,23 @@
     Gui, New
     Gui, Add, Text,, 请选择处理方式：
     Gui, Add, Radio, vAction Checked, 1. 去除文字格式
-    Gui, Add, Radio,, 2. 每个单词首字母大写
-    Gui, Add, Radio,, 3. 虚词小写处理
-    Gui, Add, Radio,, 4. 中英数分隔
-    Gui, Add, Radio,, 5. 繁体转简体
-    Gui, Add, Radio,, 6. 提取 ed2k 字段
-    Gui, Add, Radio,, 7. 提取 Magnet 哈希
-    Gui, Add, Radio,, 8. 半角转全角标点
-    Gui, Add, Radio,, 9. 删除 Via 并截断
-    Gui, Add, Radio,, 10. 单行转多行
-    Gui, Add, Radio,, 11. 行首添加"  - "
-    Gui, Add, Radio,, 12. 数据升序排序
-    Gui, Add, Radio,, 13. 数据降序排序
-    Gui, Add, Radio,, 14. 空格转URL编码
+    Gui, Add, Radio,, 2. 每个单词全部大写
+    Gui, Add, Radio,, 3. 每个单词全部小写
+    Gui, Add, Radio,, 4. 每个单词首字母大写
+    Gui, Add, Radio,, 5. 虚词小写处理
+    Gui, Add, Radio,, 6. 中英数分隔
+    Gui, Add, Radio,, 7. 繁体转简体
+    Gui, Add, Radio,, 8. 提取 ed2k 字段
+    Gui, Add, Radio,, 9. 提取 Magnet 哈希
+    Gui, Add, Radio,, 10. 半角转全角标点
+    Gui, Add, Radio,, 11. 删除 Via 并截断
+    Gui, Add, Radio,, 12. 保留前 63 字符
+    Gui, Add, Radio,, 13. 单行转多行
+    Gui, Add, Radio,, 14. 行首添加"  - "
+    Gui, Add, Radio,, 15. 数据升序排序
+    Gui, Add, Radio,, 16. 数据降序排序
+    Gui, Add, Radio,, 17. 单行转多行并升序
+    Gui, Add, Radio,, 18. 空格转 URL 编码
     Gui, Add, Button, Default w80, 确定
     Gui, Show,, 剪贴板处理工具
 return
@@ -69,27 +76,41 @@ Button确定:
             else
                 processedText := Clipboard
 
-        Case 2:  ; 首字母大写
+        Case 2:  ; 每个单词全部大写
+            StringUpper, processedText, processedText
+        
+        Case 3:  ; 每个单词全部小写
+            StringLower, processedText, processedText
+        
+        Case 4:  ; 首字母大写
             StringUpper, processedText, processedText, T
         
-        Case 3:  ; 虚词小写处理
+        Case 5:  ; 虚词小写处理
             StringUpper, processedText, processedText, T
             conjunctions := ["a","an","the","and","or","for","nor","at","by","in","of","off","on","out","to","up","with","without","from","into","onto","over","upon","via","as"]
             for _, word in conjunctions
                 processedText := RegExReplace(processedText, "i)\b" word "\b", word)
         
-        Case 4:  ; 中英数分隔
-            processedText := RegExReplace(processedText, "([\x{4e00}-\x{9fff}])([^\x{4e00}-\x{9fff}])", "$1 $2")
-            processedText := RegExReplace(processedText, "([^\x{4e00}-\x{9fff}])([\x{4e00}-\x{9fff}])", "$1 $2")
-            processedText := RegExReplace(processedText, "([a-zA-Z])(\d)", "$1 $2")
-            processedText := RegExReplace(processedText, "(\d)([a-zA-Z])", "$1 $2")
+        Case 6:  ; 中英数分隔（改进版，忽略标点符号）
+            ; 定义标点符号模式（半角和全角）
+            punctuation := ".,!?;:""'`~@#$%^&*()[]{}<>/\\|_-+= 　，。！？；：""'～＠＃＄％＾＆＊（）【】｛｝〈〉／＼｜－—＋＝"
+            
+            ; 汉字与英文/数字之间加空格（忽略标点）
+            processedText := RegExReplace(processedText, "([\x{4e00}-\x{9fff}])(?=[a-zA-Z0-9])", "$1 ")
+            processedText := RegExReplace(processedText, "(?<=[a-zA-Z0-9])([\x{4e00}-\x{9fff}])", " $1")
+            
+            ; 英文与数字之间加空格（忽略标点）
+            processedText := RegExReplace(processedText, "([a-zA-Z])(?=\d)", "$1 ")
+            processedText := RegExReplace(processedText, "(?<=\d)([a-zA-Z])", " $1")
+            
+            ; 清理多余空格
             processedText := RegExReplace(processedText, "\s+", " ")
             processedText := Trim(processedText)
 
-        Case 5:  ; 繁体转简体
+        Case 7:  ; 繁体转简体
             processedText := ConvertToSimplifiedChinese(processedText)
         
-        Case 6:  ; ed2k 处理
+        Case 8:  ; ed2k 处理
             if (SubStr(processedText, 1, 5) = "ed2k:")
             {
                 arr := StrSplit(processedText, "|")
@@ -107,7 +128,7 @@ Button确定:
                 processedText := originalClipboard
             }
         
-        Case 7:  ; Magnet 处理
+        Case 9:  ; Magnet 处理
             if RegExMatch(processedText, "i)^magnet:\?xt=urn:btih:([^&]+)", match)
                 processedText := match1
             else
@@ -116,7 +137,7 @@ Button确定:
                 processedText := originalClipboard
             }
 
-        Case 8:  ; 半角转全角标点
+        Case 10:  ; 半角转全角标点
             symbols := { " ": "　", ",": "，", "~": "～", ":": "：", ";": "；"
                        , "!": "！", "?": "？", "%": "％", "+": "＋", "-": "－"
                        , "=": "＝", "/": "／", "\": "＼", "(": "（", ")": "）"
@@ -128,7 +149,7 @@ Button确定:
             While (pos := InStr(processedText, """", false, pos))
             {
                 quoteCount++
-                replacement := (Mod(quoteCount, 2) = 1) ? "“" : "”"
+                replacement := (Mod(quoteCount, 2) = 1) ? "“" : "」"
                 processedText := SubStr(processedText, 1, pos-1) . replacement . SubStr(processedText, pos+1)
                 pos += StrLen(replacement)
             }
@@ -140,7 +161,7 @@ Button确定:
                 processedText := RegExReplace(processedText, escaped, full)
             }
 
-        Case 9:  ; 删除Via并截断
+        Case 11:  ; 删除Via并截断
             viaPatterns := ["（Via：", "(Via:"]
             for _, pattern in viaPatterns
             {
@@ -158,7 +179,13 @@ Button确定:
                 processedText := SubStr(processedText, 1, 20) . "..."
             }
 
-        Case 10:  ; 单行转多行
+        Case 12:  ; 保留前64字符
+            if (StrLen(processedText) > 63)
+            {
+                processedText := SubStr(processedText, 1, 63)
+            }
+
+        Case 13:  ; 单行转多行
             if (InStr(processedText, "`n") || InStr(processedText, "`r"))
             {
                 MsgBox 此功能仅支持单行数据
@@ -177,16 +204,39 @@ Button确定:
                 processedText := RTrim(processedText, "`n")
             }
 
-        Case 11:  ; 行首添加"  - "
+        Case 14:  ; 行首添加"  - "
             processedText := RegExReplace(processedText, "m)^", "  - ")
 
-        Case 12:  ; 升序排序
+        Case 15:  ; 升序排序
             processedText := SortClipboardText(processedText, "Asc")
 
-        Case 13:  ; 降序排序
+        Case 16:  ; 降序排序
             processedText := SortClipboardText(processedText, "Desc")
 
-        Case 14:  ; 空格转URL编码
+        Case 17:  ; 单行转多行并升序排序
+            if (InStr(processedText, "`n") || InStr(processedText, "`r"))
+            {
+                MsgBox 此功能仅支持单行数据
+                processedText := originalClipboard
+            }
+            else
+            {
+                ; 先转换为多行
+                array := StrSplit(processedText, ", ")
+                processedText := ""
+                for index, element in array
+                {
+                    element := Trim(element)
+                    if (element != "")
+                        processedText .= element . "`n"
+                }
+                processedText := RTrim(processedText, "`n")
+                
+                ; 然后升序排序
+                processedText := SortClipboardText(processedText, "Asc")
+            }
+
+        Case 18:  ; 空格转URL编码
             processedText := StrReplace(processedText, " ", "%20")
     }
 
