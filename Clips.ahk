@@ -1,16 +1,15 @@
 ﻿; 请帮我写个 Autohotkey 脚本。
-; 当我按下 Alt＋C，读取并显示当前目录下“.Clips.txt”。根据后续选择写入剪贴板。再触发一次 Ctrl＋V，粘贴。
-; 按下 Ctrl＋Alt＋C，触发一次 Ctrl＋C，将当前窗体可复制（块选）内容，写入剪贴板。并写入当前目录下.Clips.txt，添加为末尾新的行。
+; 当我按下 Alt＋C，读取并显示当前目录下Clips.txt。根据后续选择写入剪贴板。再触发一次 Ctrl＋V，粘贴。
 
 ; Alt＋C 读取剪贴板记录并选择
 !c::
     WinGet, activeHwnd, ID, A
-    clipsFile := A_ScriptDir "\.Clips.txt"
+    clipsFile := "e:\Documents\Creations\Scripts\Attachment\Clips.txt"
     
     ; 检查文件是否存在
     IfNotExist, %clipsFile%
     {
-        MsgBox .Clips.txt文件不存在于当前目录！
+        MsgBox Clips.txt文件不存在于指定目录！
         Return
     }
     
@@ -26,13 +25,13 @@
     ; 检查有效内容
     if (clips.Length() = 0)
     {
-        MsgBox .Clips.txt中没有有效内容！
+        MsgBox Clips.txt中没有有效内容！
         Return
     }
     
     ; 创建选择界面
     Gui, ClipSelect:New, +AlwaysOnTop, 选择剪贴板内容
-    Gui, Add, ListView, h200 w400 vMyListView AltSubmit -Multi gHandleDoubleClick, 可用片段|行号
+    Gui, Add, ListView, h200 w400 vMyListView AltSubmit -Multi -Hdr gHandleDoubleClick, 内容|行号
     Loop % clips.Length()
     {
         LV_Add("", clips[A_Index], A_Index)
@@ -80,7 +79,7 @@ ClipSelected:
     
     ; 显示操作反馈
     ToolTip 已复制：%selectedText%
-    SetTimer, RemoveClipToolTip, 2000
+    SetTimer, RemoveToolTip, 2000
     Gui, Destroy
     
     ; 自动粘贴到原窗口
@@ -89,62 +88,8 @@ ClipSelected:
     Send ^v
     Return
 
-; Ctrl＋Alt＋C 保存剪贴板内容
-; ^!c::
-;     WinGet, originalHwnd, ID, A
-;    ClipboardBackup := ClipboardAll
-;    
-;    ; 获取剪贴板内容
-;    Clipboard := ""
-;    Send ^c
-;    ClipWait, 2, 1  ; 延长等待时间
-;    
-;    ; 有效性检查
-;    if (Clipboard = "") {
-;        ToolTip 未捕获到有效内容!
-;        SetTimer, RemoveXToolTip, 1500
-;        Clipboard := ClipboardBackup
-;        return
-;    }
-;    
-;    ; 清理内容格式
-;    cleanContent := RegExReplace(Clipboard, "[\r\n]+", "`n")
-;    cleanContent := Trim(cleanContent, " `t`n`r")
-;    
-;    ; 空内容检查
-;    if (StrLen(cleanContent) < 1) {
-;        ToolTip 内容为空未保存!
-;        SetTimer, RemoveXToolTip, 1500
-;        Clipboard := ClipboardBackup
-;        return
-;    }
-;    
-;    clipsFile := A_ScriptDir "\.Clips.txt"
-;    
-;    ; 重复内容检测
-;    FileRead, existingContent, %clipsFile%
-;    existingContent := "`n" existingContent "`n"  ; 标准化格式
-;    If InStr(existingContent, "`n" cleanContent "`n")
-;    {
-;        ToolTip 已存在相同内容!
-;        SetTimer, RemoveXToolTip, 1500
-;        Clipboard := ClipboardBackup
-;        return
-;    }
-;    
-;    ; 追加写入文件
-;    FileAppend, %cleanContent%`n, %clipsFile%, UTF-8
-;    
-;    ; 恢复剪贴板
-;    Clipboard := ClipboardBackup
-;    WinActivate, ahk_id %originalHwnd%
-;    ToolTip 已保存内容!
-;    SetTimer, RemoveXToolTip, 1500
-;    Return
-
 ; 工具提示清除
-RemoveClipToolTip:
-;RemoveXToolTip:
+RemoveToolTip:
     ToolTip
-    SetTimer, %A_ThisLabel%, Off
+    SetTimer, RemoveToolTip, Off
     Return
