@@ -1,6 +1,5 @@
 ﻿; 请帮我写个 Autohotkey 脚本。
-; 当我按下 Alt＋v，读取剪贴板内容。
-; 弹出图形界面，可作选择：
+; 当我按下 Alt＋t，读取剪贴板内容。弹出图形界面，可作选择：
 ; 1.将剪贴板内带格式的文字去除格式。
 ; 2. 将剪贴板内的文字，每个单词大写。
 ; 3. 将剪贴板内的文字，每个单词小写。
@@ -21,9 +20,9 @@
 ; 18. 读取剪贴板内的内容，将空格转化为“%20”。
 
 ; 剪贴板多功能处理工具
-; 快捷键: Alt + V
+; 快捷键: Alt + t
 
-!v::
+!t::
     ; 备份剪贴板并验证文本
     originalClipboard := ClipboardAll
     if !Clipboard is text
@@ -110,31 +109,80 @@ Button确定:
         Case 7:  ; 繁体转简体
             processedText := ConvertToSimplifiedChinese(processedText)
         
-        Case 8:  ; ed2k 处理
-            if (SubStr(processedText, 1, 5) = "ed2k:")
+        Case 8:  ; ed2k 处理 - 多行支持
+            lines := StrSplit(processedText, "`n", "`r")
+            resultLines := []
+            ed2kCount := 0
+            
+            for index, line in lines
             {
-                arr := StrSplit(processedText, "|")
-                if (arr.Length() >= 6)
-                    processedText := arr[4] "|" arr[5]
-                else
+                line := Trim(line)
+                if (SubStr(line, 1, 5) = "ed2k:")
                 {
-                    MsgBox ed2k 链接格式无效
-                    processedText := originalClipboard
+                    arr := StrSplit(line, "|")
+                    if (arr.Length() >= 6)
+                    {
+                        resultLines.Push(arr[4] "|" arr[5])
+                        ed2kCount++
+                    }
+                    else
+                    {
+                        resultLines.Push("; 无效ed2k链接: " line)
+                    }
+                }
+                else if (line != "")
+                {
+                    resultLines.Push("; 非ed2k链接: " line)
                 }
             }
-            else
+            
+            if (ed2kCount = 0)
             {
-                MsgBox 非 ed2k 链接
+                MsgBox 未找到有效的ed2k链接
                 processedText := originalClipboard
             }
-        
-        Case 9:  ; Magnet 处理
-            if RegExMatch(processedText, "i)^magnet:\?xt=urn:btih:([^&]+)", match)
-                processedText := match1
             else
             {
-                MsgBox 非 Magnet 链接
+                processedText := ""
+                for index, line in resultLines
+                {
+                    processedText .= line "`n"
+                }
+                processedText := RTrim(processedText, "`n")
+            }
+        
+        Case 9:  ; Magnet 处理 - 多行支持
+            lines := StrSplit(processedText, "`n", "`r")
+            resultLines := []
+            magnetCount := 0
+            
+            for index, line in lines
+            {
+                line := Trim(line)
+                if RegExMatch(line, "i)^magnet:\?xt=urn:btih:([^&]+)", match)
+                {
+                    resultLines.Push(match1)
+                    magnetCount++
+                }
+                else if (line != "")
+                {
+                    resultLines.Push("; 非Magnet链接: " line)
+                }
+            }
+            
+            if (magnetCount = 0)
+            {
+                MsgBox 未找到有效的Magnet链接
                 processedText := originalClipboard
+            }
+            else
+            {
+                processedText := ""
+                for index, line in resultLines
+                {
+                    processedText .= line "`n"
+                }
+                processedText := RTrim(processedText, "`n")
             }
 
         Case 10:  ; 半角转全角标点

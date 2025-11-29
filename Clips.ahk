@@ -1,16 +1,16 @@
 ﻿; 请帮我写个 Autohotkey 脚本。
-; 当我按下 Alt＋C，读取并显示当前目录下Clips.txt。根据后续选择写入剪贴板。再触发一次 Ctrl＋V，粘贴。
-; 按下 Ctrl＋Alt＋C，触发一次 Ctrl＋C，将当前窗体可复制（块选）内容，写入剪贴板。并写入当前目录下Clips.txt，添加为末尾新的行。
+; 当我按下 Alt＋C，读取并显示当前目录下.Clips.txt。根据后续选择写入剪贴板。再触发一次 Ctrl＋V，粘贴。
+; 按下 Ctrl＋Alt＋C，触发一次 Ctrl＋C，将当前窗体可复制（块选）内容，写入剪贴板。并写入当前目录下.Clips.txt，添加为末尾新的行。
 
 ; Alt＋C 读取剪贴板记录并选择
 !c::
     WinGet, activeHwnd, ID, A
-    clipsFile := A_ScriptDir "\Clips.txt"
+    clipsFile := A_ScriptDir "\.Clips.txt"
     
     ; 检查文件是否存在
     IfNotExist, %clipsFile%
     {
-        MsgBox Clips.txt文件不存在于当前目录！
+        MsgBox .Clips.txt文件不存在于当前目录！
         Return
     }
     
@@ -26,7 +26,7 @@
     ; 检查有效内容
     if (clips.Length() = 0)
     {
-        MsgBox Clips.txt中没有有效内容！
+        MsgBox .Clips.txt中没有有效内容！
         Return
     }
     
@@ -119,7 +119,7 @@ ClipSelected:
 ;        return
 ;    }
 ;    
-;    clipsFile := A_ScriptDir "\Clips.txt"
+;    clipsFile := A_ScriptDir "\.Clips.txt"
 ;    
 ;    ; 重复内容检测
 ;    FileRead, existingContent, %clipsFile%

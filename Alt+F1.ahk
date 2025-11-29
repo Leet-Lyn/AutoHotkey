@@ -1,0 +1,188 @@
+﻿; 请帮我写个 Autohotkey 脚本。
+; 1. 如果当前应用为 Total Commander，按 Alt＋F1，则弹出图形界面。
+; 读取“d:\ProApps\Total Commander Ultima Prime\Alt+F1.txt”，每一行为一个地址，如：“Downloads=d:\Downloads\”，弹出图形界面，可选择：Downloads，将“d:\Downloads\”写入参数，运行命令：“"d:\ProApps\Total Commander Ultima Prime\TOTALCMD64.EXE" /S %1”。目的是在激活到一栏（Total Commander 有两栏）打开“d:\Downloads\”。
+; 2. 如果当前应用为 Cmder.exe，按 Alt＋F1，则弹出图形界面。
+; 读取“d:\ProApps\Cmder\Alt+F1.txt”，每一行为一个命令，如：“cd e:\Documents\Creations\Scripts\Python\”，弹出图形界面，可选择：“cd e:\Documents\Creations\Scripts\Python\”，将其写入剪贴板，粘贴到 Cmder.exe。
+; 3. 如果当前应用为 Xshell.exe，按 Alt＋F1，则弹出图形界面。
+; 读取“d:\ProApps\Xmanager Power Suite\Alt+F1.txt”，每一行为一个命令，如：“docker compose up -d”，弹出图形界面，可选择：“docker compose up -d”，将其写入剪贴板，粘贴到  Xshell.exe。
+; 预设默认为第一行。
+
+; Total Commander, Cmder 和 Xshell Alt+F1 快速命令
+
+; 全局变量
+Global g_Commands := {}
+Global g_ConfigFile := ""
+Global g_GuiTitle := ""
+Global g_AppType := "" ; "TC", "CMDER", "XSHELL"
+
+; Total Commander 热键
+#IfWinActive, ahk_class TTOTAL_CMD
+!F1::
+    g_ConfigFile := "d:\ProApps\Total Commander Ultima Prime\Alt+F1.txt"
+    g_GuiTitle := "Total Commander 快速跳转"
+    g_AppType := "TC"
+    ShowCommandSelector()
+return
+#IfWinActive
+
+; Cmder 热键 - 使用更宽泛的窗口匹配
+#If WinActive("ahk_exe Cmder.exe") || WinActive("ahk_class VirtualConsoleClass") || WinActive("ahk_class ConsoleWindowClass")
+!F1::
+    g_ConfigFile := "d:\ProApps\Cmder\Alt+F1.txt"
+    g_GuiTitle := "Cmder 快速命令"
+    g_AppType := "CMDER"
+    ShowCommandSelector()
+return
+#If
+
+; Xshell 热键
+#IfWinActive, ahk_exe Xshell.exe
+!F1::
+    g_ConfigFile := "d:\ProApps\Xmanager Power Suite\Alt+F1.txt"
+    g_GuiTitle := "Xshell 快速命令"
+    g_AppType := "XSHELL"
+    ShowCommandSelector()
+return
+#IfWinActive
+
+; 显示命令选择器的函数
+ShowCommandSelector()
+{
+    ; 使用全局变量
+    Global g_Commands, g_ConfigFile, g_GuiTitle, g_AppType
+    
+    ; 读取配置文件
+    FileRead, ConfigContent, %g_ConfigFile%
+    if ErrorLevel
+    {
+        MsgBox, 无法读取配置文件：%g_ConfigFile%
+        return
+    }
+    
+    ; 解析配置文件
+    MenuItems := []
+    g_Commands := {}
+    
+    Loop, Parse, ConfigContent, `n, `r
+    {
+        if (A_LoopField = "")
+            continue
+            
+        if (g_AppType = "TC")
+        {
+            ; Total Commander: 解析 "名称=路径" 格式
+            Pos := InStr(A_LoopField, "=")
+            if (Pos > 0)
+            {
+                Name := SubStr(A_LoopField, 1, Pos-1)
+                Path := SubStr(A_LoopField, Pos+1)
+                MenuItems.Push(Name)
+                g_Commands[Name] := Path
+            }
+        }
+        else
+        {
+            ; Cmder 和 Xshell: 整行都是命令
+            Command := A_LoopField
+            ; 创建显示名称（取前30个字符）
+            DisplayName := (StrLen(Command) > 30) ? SubStr(Command, 1, 30) "..." : Command
+            MenuItems.Push(DisplayName)
+            g_Commands[DisplayName] := Command
+        }
+    }
+    
+    if (MenuItems.Length() = 0)
+    {
+        MsgBox, 配置文件中没有找到有效的项！
+        return
+    }
+    
+    ; 创建图形界面
+    Gui, CommandSelector:New
+    Gui, CommandSelector:+AlwaysOnTop +ToolWindow
+    Gui, CommandSelector:Font, s10, Segoe UI
+    Gui, CommandSelector:Add, Text, w300 Center, 选择要执行的命令：
+    
+    ; 构建列表项字符串，默认选中第一项
+    ListItems := JoinArray(MenuItems, "|")
+    Gui, CommandSelector:Add, ListBox, w300 h200 vSelectedItem gOnItemSelect Choose1, %ListItems%
+    
+    Gui, CommandSelector:Add, Button, w140 h35 Default gExecuteCommand, 执行命令
+    Gui, CommandSelector:Add, Button, x+20 w140 h35 gCancelSelector, 取消
+    Gui, CommandSelector:Show, , %g_GuiTitle%
+    return
+}
+
+; 项目选择事件
+OnItemSelect:
+    Gui, CommandSelector:Submit, NoHide
+    return
+
+; 执行命令
+ExecuteCommand:
+    Global g_Commands, g_AppType
+    
+    Gui, CommandSelector:Submit
+    if (SelectedItem = "")
+    {
+        MsgBox, 请选择一个命令！
+        return
+    }
+    
+    ; 获取对应的命令
+    Command := g_Commands[SelectedItem]
+    
+    if (g_AppType = "TC")
+    {
+        ; Total Commander: 运行命令打开目录
+        TCExe := "d:\ProApps\Total Commander Ultima Prime\TOTALCMD64.EXE"
+        Run, "%TCExe%" /S "%Command%"
+    }
+    else if (g_AppType = "CMDER" or g_AppType = "XSHELL")
+    {
+        ; Cmder 和 Xshell: 复制命令到剪贴板并粘贴
+        Clipboard := Command
+        Sleep, 100 ; 等待剪贴板更新
+        
+        ; 激活目标窗口并粘贴
+        if (g_AppType = "CMDER")
+        {
+            ; 尝试多种方式激活Cmder窗口
+            IfWinExist, ahk_exe Cmder.exe
+                WinActivate
+            else IfWinExist, ahk_class VirtualConsoleClass
+                WinActivate
+            else IfWinExist, ahk_class ConsoleWindowClass
+                WinActivate
+        }
+        else if (g_AppType = "XSHELL")
+        {
+            WinActivate, ahk_exe Xshell.exe
+        }
+        
+        Sleep, 100 ; 等待窗口激活
+        Send, ^v ; 粘贴命令（不自动按回车，允许用户修改）
+    }
+    
+    ; 关闭GUI
+    Gui, CommandSelector:Destroy
+    return
+
+; 取消选择
+CancelSelector:
+    Gui, CommandSelector:Destroy
+    return
+
+; 辅助函数：将数组元素用指定分隔符连接
+JoinArray(Array, Delimiter)
+{
+    Result := ""
+    for Index, Value in Array
+    {
+        if (Index = 1)
+            Result := Value
+        else
+            Result := Result . Delimiter . Value
+    }
+    return Result
+}
