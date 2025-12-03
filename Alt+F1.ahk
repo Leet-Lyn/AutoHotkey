@@ -1,19 +1,17 @@
 ﻿; 请帮我写个 Autohotkey 脚本。
-; 1. 如果当前应用为 Total Commander，按 Alt＋F1，则弹出图形界面。
-; 读取“d:\ProApps\Total Commander Ultima Prime\Alt+F1.txt”，每一行为一个地址，如：“Downloads=d:\Downloads\”，弹出图形界面，可选择：Downloads，将“d:\Downloads\”写入参数，运行命令：“"d:\ProApps\Total Commander Ultima Prime\TOTALCMD64.EXE" /S %1”。目的是在激活到一栏（Total Commander 有两栏）打开“d:\Downloads\”。
-; 2. 如果当前应用为 Cmder.exe，按 Alt＋F1，则弹出图形界面。
-; 读取“d:\ProApps\Cmder\Alt+F1.txt”，每一行为一个命令，如：“cd e:\Documents\Creations\Scripts\Python\”，弹出图形界面，可选择：“cd e:\Documents\Creations\Scripts\Python\”，将其写入剪贴板，粘贴到 Cmder.exe。
-; 3. 如果当前应用为 Xshell.exe，按 Alt＋F1，则弹出图形界面。
-; 读取“d:\ProApps\Xmanager Power Suite\Alt+F1.txt”，每一行为一个命令，如：“docker compose up -d”，弹出图形界面，可选择：“docker compose up -d”，将其写入剪贴板，粘贴到  Xshell.exe。
+; 1. 如果当前应用为 Total Commander，按 Alt＋F1，则弹出图形界面。读取“d:\ProApps\Total Commander Ultima Prime\Alt+F1.txt”，每一行为一个地址，如：“Downloads=d:\Downloads\”，弹出图形界面，可选择：Downloads，将“d:\Downloads\”写入参数，运行命令：“"d:\ProApps\Total Commander Ultima Prime\TOTALCMD64.EXE" /S %1”。目的是在激活到一栏（Total Commander 有两栏）打开“d:\Downloads\”。
+; 2. 如果当前应用为 Cmder.exe，按 Alt＋F1，则弹出图形界面。读取“d:\ProApps\Cmder\Alt+F1.txt”，每一行为一个命令，如：“cd e:\Documents\Creations\Scripts\Python\”，弹出图形界面，可选择：“cd e:\Documents\Creations\Scripts\Python\”，将其写入剪贴板，粘贴到 Cmder.exe。
+; 3. 如果当前应用为 Xshell.exe，按 Alt＋F1，则弹出图形界面。读取“d:\ProApps\Xmanager Power Suite\Alt+F1.txt”，每一行为一个命令，如：“docker compose up -d”，弹出图形界面，可选择：“docker compose up -d”，将其写入剪贴板，粘贴到 Xshell.exe。
+; 4. 如果当前应用为 Notepad3.exe，按 Alt＋F1，则弹出图形界面。读取“d:\ProApps\Notepad3\Alt+F1.txt”，每一行为一个地址，如：“Clips.txt=e:\Documents\Creations\Scripts\Attachment\Clips.txt”，弹出图形界面，可选择：Clips.txt，将“e:\Documents\Creations\Scripts\Attachment\Clips.txt” 用 Notepad3.exe 用新的窗口打开。
 ; 预设默认为第一行。
 
-; Total Commander, Cmder 和 Xshell Alt+F1 快速命令
+; Total Commander, Cmder, Xshell 和 Notepad3 Alt+F1 快速命令
 
 ; 全局变量
 Global g_Commands := {}
 Global g_ConfigFile := ""
 Global g_GuiTitle := ""
-Global g_AppType := "" ; "TC", "CMDER", "XSHELL"
+Global g_AppType := "" ; "TC", "CMDER", "XSHELL", "NOTEPAD3"
 
 ; Total Commander 热键
 #IfWinActive, ahk_class TTOTAL_CMD
@@ -45,6 +43,16 @@ return
 return
 #IfWinActive
 
+; Notepad3 热键
+#IfWinActive, ahk_exe Notepad3.exe
+!F1::
+    g_ConfigFile := "d:\ProApps\Notepad3\Alt+F1.txt"
+    g_GuiTitle := "Notepad3 快速打开"
+    g_AppType := "NOTEPAD3"
+    ShowCommandSelector()
+return
+#IfWinActive
+
 ; 显示命令选择器的函数
 ShowCommandSelector()
 {
@@ -68,26 +76,27 @@ ShowCommandSelector()
         if (A_LoopField = "")
             continue
             
-        if (g_AppType = "TC")
+        ; 统一解析格式："显示名称=命令/路径"
+        Pos := InStr(A_LoopField, "=")
+        if (Pos > 0)
         {
-            ; Total Commander: 解析 "名称=路径" 格式
-            Pos := InStr(A_LoopField, "=")
-            if (Pos > 0)
-            {
-                Name := SubStr(A_LoopField, 1, Pos-1)
-                Path := SubStr(A_LoopField, Pos+1)
-                MenuItems.Push(Name)
-                g_Commands[Name] := Path
-            }
+            Name := Trim(SubStr(A_LoopField, 1, Pos-1))
+            Command := Trim(SubStr(A_LoopField, Pos+1))
+            
+            ; 如果名称为空，则使用命令作为名称
+            if (Name = "")
+                Name := Command
+                
+            MenuItems.Push(Name)
+            g_Commands[Name] := Command
         }
         else
         {
-            ; Cmder 和 Xshell: 整行都是命令
-            Command := A_LoopField
-            ; 创建显示名称（取前30个字符）
-            DisplayName := (StrLen(Command) > 30) ? SubStr(Command, 1, 30) "..." : Command
-            MenuItems.Push(DisplayName)
-            g_Commands[DisplayName] := Command
+            ; 如果没有等号，整行作为名称和命令
+            Name := Trim(A_LoopField)
+            Command := Trim(A_LoopField)
+            MenuItems.Push(Name)
+            g_Commands[Name] := Command
         }
     }
     
@@ -162,6 +171,12 @@ ExecuteCommand:
         
         Sleep, 100 ; 等待窗口激活
         Send, ^v ; 粘贴命令（不自动按回车，允许用户修改）
+    }
+    else if (g_AppType = "NOTEPAD3")
+    {
+        ; Notepad3: 用新窗口打开文件
+        Notepad3Exe := "d:\ProApps\Notepad3\Notepad3.exe"
+        Run, "%Notepad3Exe%" "%Command%"
     }
     
     ; 关闭GUI

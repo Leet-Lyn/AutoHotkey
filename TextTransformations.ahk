@@ -39,7 +39,7 @@
     Gui, Add, Radio,, 2. 每个单词全部大写
     Gui, Add, Radio,, 3. 每个单词全部小写
     Gui, Add, Radio,, 4. 每个单词首字母大写
-    Gui, Add, Radio,, 5. 虚词小写处理
+    Gui, Add, Radio,, 5. 虚词小写处理（行首虚词首字母大写）
     Gui, Add, Radio,, 6. 中英数分隔
     Gui, Add, Radio,, 7. 繁体转简体
     Gui, Add, Radio,, 8. 提取 ed2k 字段
@@ -84,11 +84,85 @@ Button确定:
         Case 4:  ; 首字母大写
             StringUpper, processedText, processedText, T
         
-        Case 5:  ; 虚词小写处理
+        Case 5:  ; 虚词小写处理（行首虚词首字母大写）
+            ; 首先将整个文本转换为首字母大写
             StringUpper, processedText, processedText, T
+            
+            ; 虚词列表（小写形式）
             conjunctions := ["a","an","the","and","or","for","nor","at","by","in","of","off","on","out","to","up","with","without","from","into","onto","over","upon","via","as"]
-            for _, word in conjunctions
-                processedText := RegExReplace(processedText, "i)\b" word "\b", word)
+            
+            ; 按行处理，每行独立处理
+            lines := StrSplit(processedText, "`n", "`r")
+            resultLines := []
+            
+            for _, line in lines
+            {
+                if (line = "")
+                {
+                    resultLines.Push("")
+                    continue
+                }
+                
+                ; 提取行首第一个单词（去除前导空格）
+                if RegExMatch(line, "^\s*(\w+)", firstWordMatch)
+                {
+                    firstWord := firstWordMatch1
+                    ; 将第一个单词转换为小写进行比较
+                    StringLower, firstWordLower, firstWord
+                    
+                    ; 检查第一个单词是否是虚词
+                    firstWordIsConjunction := false
+                    for _, conjunction in conjunctions
+                    {
+                        if (firstWordLower = conjunction)
+                        {
+                            firstWordIsConjunction := true
+                            break
+                        }
+                    }
+                    
+                    if firstWordIsConjunction
+                    {
+                        ; 对于虚词在行首的情况
+                        ; 1. 先将整行所有虚词转为小写
+                        for _, conjunction in conjunctions
+                        {
+                            ; 使用正则表达式匹配整个单词
+                            line := RegExReplace(line, "i)\b" conjunction "\b", conjunction)
+                        }
+                        
+                        ; 2. 将行首的虚词重新首字母大写
+                        ; 获取首字母并大写
+                        firstLetter := SubStr(firstWordLower, 1, 1)
+                        restOfWord := SubStr(firstWordLower, 2)
+                        StringUpper, firstLetterUpper, firstLetter
+                        capitalizedConjunction := firstLetterUpper . restOfWord
+                        
+                        ; 替换行首的虚词
+                        line := RegExReplace(line, "^\s*" firstWordLower, firstWordMatch . capitalizedConjunction)
+                    }
+                    else
+                    {
+                        ; 行首不是虚词，直接将所有虚词转为小写
+                        for _, conjunction in conjunctions
+                        {
+                            line := RegExReplace(line, "i)\b" conjunction "\b", conjunction)
+                        }
+                    }
+                }
+                else
+                {
+                    ; 没有单词的行，直接处理所有虚词
+                    for _, conjunction in conjunctions
+                    {
+                        line := RegExReplace(line, "i)\b" conjunction "\b", conjunction)
+                    }
+                }
+                
+                resultLines.Push(line)
+            }
+            
+            processedText := Join(resultLines, "`n")
         
         Case 6:  ; 中英数分隔（改进版，忽略标点符号）
             ; 定义标点符号模式（半角和全角）
