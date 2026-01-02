@@ -10,14 +10,9 @@
 ; 8. 对于 ed2k 开头的链接，截取第 3 个“|”之后，至第 5 个“|”之前的字段。
 ; 9. 对于 magnet 开头的链接 ，截取 “magnet:?xt=urn:btih:”之后，至“&dn”之前的字段。
 ; 10. 将剪贴板内的文字，所有半角标点符号转为全角标点符号。（空格（ ），逗号（,），波浪号（~），冒号（:），分号（;），感叹号（!），问号（?），百分号（%），加号（+），减号（-），等号（=），斜杠（/），反斜杠（\），引号（""），括号（()），大于号（>），小于号（<）替换为全角符号（空格（　），逗号（，），波浪号（～），冒号（：），分号（；），感叹号（！），问号（？），百分号（％），加号（＋），减号（－），等号（＝），斜杠（／），反斜杠（＼），引号（“”），括号（（）），大于号（〉），小于号（〈））。
-; 11. 删除“（Via：”之后的文字。
-; 12. 删除 64 个字符后的内容。
-; 13. 读取剪贴板内的内容，将单行多个数据（每个数据之间用半角逗号加空格隔开“, ”），将这组数据转换成多行数据，每一行为一个数据。
-; 14. 将剪贴板内的多行文字，每一行行首增加两个空格加一个破折号及一个空格。（“  - ”）。
-; 15. 读取剪贴板内的内容，进行升序排序。如果是单行数据，则这组数据（每个数据之间用半角逗号加空格隔开“, ”），对这组数据排序，仍然以半角逗号加空格隔开。如果是多行数据，则这组数据（每一行为一个数据），对这组数据排序，仍然每一行为一个数据。
-; 16. 读取剪贴板内的内容，进行降序排序。如果是单行数据，则这组数据（每个数据之间用半角逗号加空格隔开“, ”），对这组数据排序，仍然以半角逗号加空格隔开。如果是多行数据，则这组数据（每一行为一个数据），对这组数据排序，仍然每一行为一个数据。
-; 17. 读取剪贴板内的内容，将单行多个数据（每个数据之间用半角逗号加空格隔开“, ”），将这组数据转换成多行数据，并升序排序。每一行为一个数据。
-; 18. 读取剪贴板内的内容，将空格转化为“%20”。
+; 11. 读取剪贴板内的内容，将空格转化为“%20”。
+; 12. 删除“（Via：”之后的文字。
+; 13. 删除 64 个字符后的内容。
 
 ; 剪贴板多功能处理工具
 ; 快捷键: Alt + t
@@ -45,14 +40,9 @@
     Gui, Add, Radio,, 8. 提取 ed2k 字段
     Gui, Add, Radio,, 9. 提取 Magnet 哈希
     Gui, Add, Radio,, 10. 半角转全角标点
-    Gui, Add, Radio,, 11. 删除 Via 并截断
-    Gui, Add, Radio,, 12. 保留前 63 字符
-    Gui, Add, Radio,, 13. 单行转多行
-    Gui, Add, Radio,, 14. 行首添加"  - "
-    Gui, Add, Radio,, 15. 数据升序排序
-    Gui, Add, Radio,, 16. 数据降序排序
-    Gui, Add, Radio,, 17. 单行转多行并升序
-    Gui, Add, Radio,, 18. 空格转 URL 编码
+    Gui, Add, Radio,, 11. 空格转 URL 编码
+    Gui, Add, Radio,, 12. 删除 Via 并截断
+    Gui, Add, Radio,, 13. 保留前 63 字符
     Gui, Add, Button, Default w80, 确定
     Gui, Show,, 剪贴板处理工具
 return
@@ -283,7 +273,10 @@ Button确定:
                 processedText := RegExReplace(processedText, escaped, full)
             }
 
-        Case 11:  ; 删除Via并截断
+        Case 11:  ; 空格转URL编码
+            processedText := StrReplace(processedText, " ", "%20")
+        
+        Case 12:  ; 删除Via并截断
             viaPatterns := ["（Via：", "(Via:"]
             for _, pattern in viaPatterns
             {
@@ -301,65 +294,11 @@ Button确定:
                 processedText := SubStr(processedText, 1, 20) . "..."
             }
 
-        Case 12:  ; 保留前64字符
+        Case 13:  ; 保留前64字符
             if (StrLen(processedText) > 63)
             {
                 processedText := SubStr(processedText, 1, 63)
             }
-
-        Case 13:  ; 单行转多行
-            if (InStr(processedText, "`n") || InStr(processedText, "`r"))
-            {
-                MsgBox 此功能仅支持单行数据
-                processedText := originalClipboard
-            }
-            else
-            {
-                array := StrSplit(processedText, ", ")
-                processedText := ""
-                for index, element in array
-                {
-                    element := Trim(element)
-                    if (element != "")
-                        processedText .= element . "`n"
-                }
-                processedText := RTrim(processedText, "`n")
-            }
-
-        Case 14:  ; 行首添加"  - "
-            processedText := RegExReplace(processedText, "m)^", "  - ")
-
-        Case 15:  ; 升序排序
-            processedText := SortClipboardText(processedText, "Asc")
-
-        Case 16:  ; 降序排序
-            processedText := SortClipboardText(processedText, "Desc")
-
-        Case 17:  ; 单行转多行并升序排序
-            if (InStr(processedText, "`n") || InStr(processedText, "`r"))
-            {
-                MsgBox 此功能仅支持单行数据
-                processedText := originalClipboard
-            }
-            else
-            {
-                ; 先转换为多行
-                array := StrSplit(processedText, ", ")
-                processedText := ""
-                for index, element in array
-                {
-                    element := Trim(element)
-                    if (element != "")
-                        processedText .= element . "`n"
-                }
-                processedText := RTrim(processedText, "`n")
-                
-                ; 然后升序排序
-                processedText := SortClipboardText(processedText, "Asc")
-            }
-
-        Case 18:  ; 空格转URL编码
-            processedText := StrReplace(processedText, " ", "%20")
     }
 
     ; 更新剪贴板并自动粘贴
@@ -375,36 +314,6 @@ return
 RestoreClipboard:
     Clipboard := originalClipboard
 return
-
-; 排序功能函数
-SortClipboardText(text, order) {
-    isMultiLine := InStr(text, "`n") ? 1 : 0
-    
-    if isMultiLine
-        array := StrSplit(text, "`n", "`r")
-    else
-        array := StrSplit(text, ", ")
-    
-    cleanedArray := []
-    Loop % array.Length()
-    {
-        element := Trim(array[A_Index])
-        if StrLen(element)
-            cleanedArray.Push(element)
-    }
-    
-    sortedText := Join(cleanedArray, "`n")
-    if (order = "Asc")
-        Sort, sortedText, CL
-    else
-        Sort, sortedText, CL R
-    
-    sortedArray := StrSplit(sortedText, "`n")
-    if isMultiLine
-        return Join(sortedArray, "`n")
-    else
-        return Join(sortedArray, ", ")
-}
 
 Join(array, delimiter) {
     result := ""

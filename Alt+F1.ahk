@@ -1,8 +1,8 @@
 ﻿; 请帮我写个 Autohotkey 脚本。
-; 1. 如果当前应用为 Total Commander，按 Alt＋F1，则弹出图形界面。读取“d:\ProApps\Total Commander Ultima Prime\Alt+F1.txt”，每一行为一个地址，如：“Downloads=d:\Downloads\”，弹出图形界面，可选择：Downloads，将“d:\Downloads\”写入参数，运行命令：“"d:\ProApps\Total Commander Ultima Prime\TOTALCMD64.EXE" /S %1”。目的是在激活到一栏（Total Commander 有两栏）打开“d:\Downloads\”。
-; 2. 如果当前应用为 Cmder.exe，按 Alt＋F1，则弹出图形界面。读取“d:\ProApps\Cmder\Alt+F1.txt”，每一行为一个命令，如：“cd e:\Documents\Creations\Scripts\Python\”，弹出图形界面，可选择：“cd e:\Documents\Creations\Scripts\Python\”，将其写入剪贴板，粘贴到 Cmder.exe。
-; 3. 如果当前应用为 Xshell.exe，按 Alt＋F1，则弹出图形界面。读取“d:\ProApps\Xmanager Power Suite\Alt+F1.txt”，每一行为一个命令，如：“docker compose up -d”，弹出图形界面，可选择：“docker compose up -d”，将其写入剪贴板，粘贴到 Xshell.exe。
-; 4. 如果当前应用为 Notepad3.exe，按 Alt＋F1，则弹出图形界面。读取“d:\ProApps\Notepad3\Alt+F1.txt”，每一行为一个地址，如：“Clips.txt=e:\Documents\Creations\Scripts\Attachment\Clips.txt”，弹出图形界面，可选择：Clips.txt，将“e:\Documents\Creations\Scripts\Attachment\Clips.txt” 用 Notepad3.exe 用新的窗口打开。
+; 1. 如果当前应用为 Total Commander，按 Alt＋F1，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachment\Total Commander Ultima Prime Alt+F1.txt”，每一行为一个地址，如：“Downloads=d:\Downloads\”，弹出图形界面，可选择：Downloads，将“d:\Downloads\”写入参数，运行命令：“"d:\ProApps\Total Commander Ultima Prime\TOTALCMD64.EXE" /S %1”。目的是在激活到一栏（Total Commander 有两栏）打开“d:\Downloads\”。
+; 2. 如果当前应用为 Cmder.exe，按 Alt＋F1，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachment\Cmder Alt+F1.txt”，每一行为一个命令，如：“cd e:\Documents\Creations\Scripts\Python\”，弹出图形界面，可选择：“cd e:\Documents\Creations\Scripts\Python\”，将其写入剪贴板，粘贴到 Cmder.exe。
+; 3. 如果当前应用为 Xshell.exe，按 Alt＋F1，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachment\Xshell Alt+F1.txt”，每一行为一个命令，如：“docker compose up -d”，弹出图形界面，可选择：“docker compose up -d”，将其写入剪贴板，粘贴到 Xshell.exe。
+; 4. 如果当前应用为 Notepad3.exe，按 Alt＋F1，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachment\Notepad3 Alt+F1.txt”，每一行为一个地址，如：“Clips.txt=e:\Documents\Creations\Scripts\Attachment\Clips.txt”，弹出图形界面，可选择：Clips.txt，将“e:\Documents\Creations\Scripts\Attachment\Clips.txt” 用 Notepad3.exe 用新的窗口打开。
 ; 预设默认为第一行。
 
 ; Total Commander, Cmder, Xshell 和 Notepad3 Alt+F1 快速命令
@@ -12,11 +12,13 @@ Global g_Commands := {}
 Global g_ConfigFile := ""
 Global g_GuiTitle := ""
 Global g_AppType := "" ; "TC", "CMDER", "XSHELL", "NOTEPAD3"
+Global g_LastClickTime := 0
+Global g_LastClickItem := ""
 
 ; Total Commander 热键
 #IfWinActive, ahk_class TTOTAL_CMD
 !F1::
-    g_ConfigFile := "d:\ProApps\Total Commander Ultima Prime\Alt+F1.txt"
+    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachment\Total Commander Ultima Prime Alt+F1.txt"
     g_GuiTitle := "Total Commander 快速跳转"
     g_AppType := "TC"
     ShowCommandSelector()
@@ -26,7 +28,7 @@ return
 ; Cmder 热键 - 使用更宽泛的窗口匹配
 #If WinActive("ahk_exe Cmder.exe") || WinActive("ahk_class VirtualConsoleClass") || WinActive("ahk_class ConsoleWindowClass")
 !F1::
-    g_ConfigFile := "d:\ProApps\Cmder\Alt+F1.txt"
+    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachment\Cmder Alt+F1.txt"
     g_GuiTitle := "Cmder 快速命令"
     g_AppType := "CMDER"
     ShowCommandSelector()
@@ -36,7 +38,7 @@ return
 ; Xshell 热键
 #IfWinActive, ahk_exe Xshell.exe
 !F1::
-    g_ConfigFile := "d:\ProApps\Xmanager Power Suite\Alt+F1.txt"
+    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachment\Xshell Alt+F1.txt"
     g_GuiTitle := "Xshell 快速命令"
     g_AppType := "XSHELL"
     ShowCommandSelector()
@@ -46,7 +48,7 @@ return
 ; Notepad3 热键
 #IfWinActive, ahk_exe Notepad3.exe
 !F1::
-    g_ConfigFile := "d:\ProApps\Notepad3\Alt+F1.txt"
+    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachment\Notepad3 Alt+F1.txt"
     g_GuiTitle := "Notepad3 快速打开"
     g_AppType := "NOTEPAD3"
     ShowCommandSelector()
@@ -58,6 +60,11 @@ ShowCommandSelector()
 {
     ; 使用全局变量
     Global g_Commands, g_ConfigFile, g_GuiTitle, g_AppType
+    Global g_LastClickTime, g_LastClickItem
+    
+    ; 重置双击相关变量
+    g_LastClickTime := 0
+    g_LastClickItem := ""
     
     ; 读取配置文件
     FileRead, ConfigContent, %g_ConfigFile%
@@ -122,16 +129,36 @@ ShowCommandSelector()
     return
 }
 
-; 项目选择事件
+; 项目选择事件（支持双击）
 OnItemSelect:
     Gui, CommandSelector:Submit, NoHide
+    Global g_LastClickTime, g_LastClickItem
+    
+    ; 检查是否为双击
+    CurrentTime := A_TickCount
+    If (g_LastClickItem = SelectedItem && CurrentTime - g_LastClickTime < 500) ; 500ms内再次点击同一项目视为双击
+    {
+        ; 重置双击相关变量
+        g_LastClickTime := 0
+        g_LastClickItem := ""
+        
+        ; 执行命令
+        GoSub, ExecuteCommand
+    }
+    Else
+    {
+        ; 更新点击信息
+        g_LastClickTime := CurrentTime
+        g_LastClickItem := SelectedItem
+    }
     return
 
 ; 执行命令
 ExecuteCommand:
     Global g_Commands, g_AppType
     
-    Gui, CommandSelector:Submit
+    ; 确保GUI已提交，获取选中的项目
+    Gui, CommandSelector:Submit, NoHide
     if (SelectedItem = "")
     {
         MsgBox, 请选择一个命令！
@@ -141,6 +168,7 @@ ExecuteCommand:
     ; 获取对应的命令
     Command := g_Commands[SelectedItem]
     
+    ; 根据应用类型执行不同的操作
     if (g_AppType = "TC")
     {
         ; Total Commander: 运行命令打开目录
