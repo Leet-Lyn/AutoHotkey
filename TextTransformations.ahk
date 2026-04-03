@@ -4,17 +4,17 @@
 ; 2. 将剪贴板内的文字，每个单词大写。
 ; 3. 将剪贴板内的文字，每个单词小写。
 ; 4. 将剪贴板内的文字，每个单词首字母大写，其余小写。
-; 5. 将剪贴板内的文字，每个单词首字母大写，但虚词小写（a, an, the, and, or, for, nor, at, by, for, in, of, off, on, out, to, up, with, without, from, into, onto, over, upon, via, as）。修改后再次写入剪贴板。
-; 6. 将剪贴板内文字，汉字、英文、或数字）用空格隔开。
-; 7：将剪贴板内的汉字繁体中文转为简体中文。
-; 8. 对于 ed2k 开头的链接，截取第 3 个“|”之后，至第 5 个“|”之前的字段。
-; 9. 对于 magnet 开头的链接 ，截取 “magnet:?xt=urn:btih:”之后，至“&dn”之前的字段。
-; 10. 将剪贴板内的文字，所有半角标点符号转为全角标点符号。（空格（ ），逗号（,），波浪号（~），冒号（:），分号（;），感叹号（!），问号（?），百分号（%），加号（+），减号（-），等号（=），斜杠（/），反斜杠（\），引号（""），括号（()），大于号（>），小于号（<）替换为全角符号（空格（　），逗号（，），波浪号（～），冒号（：），分号（；），感叹号（！），问号（？），百分号（％），加号（＋），减号（－），等号（＝），斜杠（／），反斜杠（＼），引号（“”），括号（（）），大于号（〉），小于号（〈））。
-; 11. 读取剪贴板内的内容，将空格转化为“%20”。
-; 12. 删除“（Via：”之后的文字。
-; 13. 删除 64 个字符后的内容。
+; 5. 将剪贴板内的文字，每个单词首字母大写，但虚词小写（a, an, the, and, or, for, nor, at, by, for, in, of, off, on, out, to, up, with, without, from, into, onto, over, upon, via, as）。修改后再次写入剪贴板
+; 6. 将剪贴板内文字，汉字、英文、或数字）用空格隔开。。
+; 7. 将剪贴板内的文字，对驼峰命名，用空格隔开。
+; 8：将剪贴板内的汉字繁体中文转为简体中文。
+; 9. 对于 ed2k 开头的链接，截取第 3 个“|”之后，至第 5 个“|”之前的字段。
+; 10. 对于 magnet 开头的链接 ，截取 “magnet:?xt=urn:btih:”之后，至“&dn”之前的字段。
+; 11. 将剪贴板内的文字，所有半角标点符号转为全角标点符号。（空格（ ），逗号（,），波浪号（~），冒号（:），分号（;），感叹号（!），问号（?），百分号（%），加号（+），减号（-），等号（=），斜杠（/），反斜杠（\），引号（""），括号（()），大于号（>），小于号（<）替换为全角符号（空格（　），逗号（，），波浪号（～），冒号（：），分号（；），感叹号（！），问号（？），百分号（％），加号（＋），减号（－），等号（＝），斜杠（／），反斜杠（＼），引号（“”），括号（（）），大于号（〉），小于号（〈））。
+; 12. 读取剪贴板内的内容，将空格转化为“%20”。
+; 13. 删除“（Via：”之后的文字。
+; 14. 删除 64 个字符后的内容。
 
-; 剪贴板多功能处理工具
 ; 快捷键: Alt + t
 
 !t::
@@ -36,13 +36,14 @@
     Gui, Add, Radio,, 4. 每个单词首字母大写
     Gui, Add, Radio,, 5. 虚词小写处理（行首虚词首字母大写）
     Gui, Add, Radio,, 6. 中英数分隔
-    Gui, Add, Radio,, 7. 繁体转简体
-    Gui, Add, Radio,, 8. 提取 ed2k 字段
-    Gui, Add, Radio,, 9. 提取 Magnet 哈希
-    Gui, Add, Radio,, 10. 半角转全角标点
-    Gui, Add, Radio,, 11. 空格转 URL 编码
-    Gui, Add, Radio,, 12. 删除 Via 并截断
-    Gui, Add, Radio,, 13. 保留前 63 字符
+    Gui, Add, Radio,, 7. 驼峰命名分隔
+    Gui, Add, Radio,, 8. 繁体转简体
+    Gui, Add, Radio,, 9. 提取 ed2k 字段
+    Gui, Add, Radio,, 10. 提取 Magnet 哈希
+    Gui, Add, Radio,, 11. 半角转全角标点
+    Gui, Add, Radio,, 12. 空格转 URL 编码
+    Gui, Add, Radio,, 13. 删除 Via 并截断
+    Gui, Add, Radio,, 14. 保留前 63 字符
     Gui, Add, Button, Default w80, 确定
     Gui, Show,, 剪贴板处理工具
 return
@@ -114,7 +115,7 @@ Button确定:
                     if firstWordIsConjunction
                     {
                         ; 对于虚词在行首的情况
-                        ; 1. 先将整行所有虚词转为小写
+                        ; 1. 先将整行所有虚词转为小写（包括行首的虚词）
                         for _, conjunction in conjunctions
                         {
                             ; 使用正则表达式匹配整个单词
@@ -122,14 +123,18 @@ Button确定:
                         }
                         
                         ; 2. 将行首的虚词重新首字母大写
-                        ; 获取首字母并大写
+                        ; 获取行首的空格部分
+                        RegExMatch(line, "^(\s*)", leadingSpaces)
+                        
+                        ; 构建首字母大写的虚词
                         firstLetter := SubStr(firstWordLower, 1, 1)
                         restOfWord := SubStr(firstWordLower, 2)
                         StringUpper, firstLetterUpper, firstLetter
                         capitalizedConjunction := firstLetterUpper . restOfWord
                         
-                        ; 替换行首的虚词
-                        line := RegExReplace(line, "^\s*" firstWordLower, firstWordMatch . capitalizedConjunction)
+                        ; 用首字母大写的虚词替换行首的小写虚词
+                        ; 注意：我们只替换行首的虚词，不包括空格
+                        line := RegExReplace(line, "^\s*" firstWordLower, leadingSpaces . capitalizedConjunction)
                     }
                     else
                     {
@@ -169,11 +174,45 @@ Button确定:
             ; 清理多余空格
             processedText := RegExReplace(processedText, "\s+", " ")
             processedText := Trim(processedText)
-
-        Case 7:  ; 繁体转简体
+        
+        Case 7:  ; 驼峰命名分隔（新增功能）
+            ; 按行处理
+            lines := StrSplit(processedText, "`n", "`r")
+            resultLines := []
+            
+            for _, line in lines
+            {
+                if (line = "")
+                {
+                    resultLines.Push("")
+                    continue
+                }
+                
+                ; 方法1：处理小驼峰（camelCase）和大驼峰（PascalCase）
+                ; 在小写字母后接大写字母的位置插入空格
+                line := RegExReplace(line, "([a-z])([A-Z])", "$1 $2")
+                
+                ; 方法2：处理连续大写字母后接小写字母的情况（如"HTTPServer" -> "HTTP Server"）
+                ; 在大写字母后接小写字母，且前面不是空格的情况下插入空格
+                line := RegExReplace(line, "([A-Z])([A-Z][a-z])", "$1 $2")
+                
+                ; 方法3：处理数字后接字母或字母后接数字的情况
+                line := RegExReplace(line, "([a-zA-Z])(\d)", "$1 $2")
+                line := RegExReplace(line, "(\d)([a-zA-Z])", "$1 $2")
+                
+                ; 清理可能因多次替换产生的多余空格
+                line := RegExReplace(line, "\s+", " ")
+                line := Trim(line)
+                
+                resultLines.Push(line)
+            }
+            
+            processedText := Join(resultLines, "`n")
+        
+        Case 8:  ; 繁体转简体
             processedText := ConvertToSimplifiedChinese(processedText)
         
-        Case 8:  ; ed2k 处理 - 多行支持
+        Case 9:  ; ed2k 处理 - 多行支持
             lines := StrSplit(processedText, "`n", "`r")
             resultLines := []
             ed2kCount := 0
@@ -215,7 +254,7 @@ Button确定:
                 processedText := RTrim(processedText, "`n")
             }
         
-        Case 9:  ; Magnet 处理 - 多行支持
+        Case 10:  ; Magnet 处理 - 多行支持
             lines := StrSplit(processedText, "`n", "`r")
             resultLines := []
             magnetCount := 0
@@ -249,7 +288,7 @@ Button确定:
                 processedText := RTrim(processedText, "`n")
             }
 
-        Case 10:  ; 半角转全角标点
+        Case 11:  ; 半角转全角标点
             symbols := { " ": "　", ",": "，", "~": "～", ":": "：", ";": "；"
                        , "!": "！", "?": "？", "%": "％", "+": "＋", "-": "－"
                        , "=": "＝", "/": "／", "\": "＼", "(": "（", ")": "）"
@@ -273,10 +312,10 @@ Button确定:
                 processedText := RegExReplace(processedText, escaped, full)
             }
 
-        Case 11:  ; 空格转URL编码
+        Case 12:  ; 空格转URL编码
             processedText := StrReplace(processedText, " ", "%20")
         
-        Case 12:  ; 删除Via并截断
+        Case 13:  ; 删除Via并截断
             viaPatterns := ["（Via：", "(Via:"]
             for _, pattern in viaPatterns
             {
@@ -294,7 +333,7 @@ Button确定:
                 processedText := SubStr(processedText, 1, 20) . "..."
             }
 
-        Case 13:  ; 保留前64字符
+        Case 14:  ; 保留前64字符
             if (StrLen(processedText) > 63)
             {
                 processedText := SubStr(processedText, 1, 63)

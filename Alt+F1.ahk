@@ -1,8 +1,8 @@
 ﻿; 请帮我写个 Autohotkey 脚本。
-; 1. 如果当前应用为 Total Commander，按 Alt＋F1，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachment\Total Commander Ultima Prime Alt+F1.txt”，每一行为一个地址，如：“Downloads=d:\Downloads\”，弹出图形界面，可选择：Downloads，将“d:\Downloads\”写入参数，运行命令：“"d:\ProApps\Total Commander Ultima Prime\TOTALCMD64.EXE" /S %1”。目的是在激活到一栏（Total Commander 有两栏）打开“d:\Downloads\”。
-; 2. 如果当前应用为 Cmder.exe，按 Alt＋F1，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachment\Cmder Alt+F1.txt”，每一行为一个命令，如：“cd e:\Documents\Creations\Scripts\Python\”，弹出图形界面，可选择：“cd e:\Documents\Creations\Scripts\Python\”，将其写入剪贴板，粘贴到 Cmder.exe。
-; 3. 如果当前应用为 Xshell.exe，按 Alt＋F1，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachment\Xshell Alt+F1.txt”，每一行为一个命令，如：“docker compose up -d”，弹出图形界面，可选择：“docker compose up -d”，将其写入剪贴板，粘贴到 Xshell.exe。
-; 4. 如果当前应用为 Notepad3.exe，按 Alt＋F1，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachment\Notepad3 Alt+F1.txt”，每一行为一个地址，如：“Clips.txt=e:\Documents\Creations\Scripts\Attachment\Clips.txt”，弹出图形界面，可选择：Clips.txt，将“e:\Documents\Creations\Scripts\Attachment\Clips.txt” 用 Notepad3.exe 用新的窗口打开。
+; 1. 如果当前应用为 Total Commander，按 Alt＋F1，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Total Commander Ultima Prime Alt+F1.txt”，每一行为一个地址，如：“Downloads=d:\Downloads\”，弹出图形界面，可选择：Downloads，将“d:\Downloads\”写入参数，运行命令：“"d:\ProApps\Total Commander Ultima Prime\TOTALCMD64.EXE" /S %1”。目的是在激活到一栏（Total Commander 有两栏）打开“d:\Downloads\”。
+; 2. 如果当前应用为 Cmder.exe，按 Alt＋F1，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Cmder Alt+F1.txt”，每一行为一个命令，如：“cd e:\Documents\Creations\Scripts\Python\”，弹出图形界面，可选择：“cd e:\Documents\Creations\Scripts\Python\”，将其写入剪贴板，粘贴到 Cmder.exe。
+; 3. 如果当前应用为 Xshell.exe，按 Alt＋F1，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Xshell Alt+F1.txt”，每一行为一个命令，如：“docker compose up -d”，弹出图形界面，可选择：“docker compose up -d”，将其写入剪贴板，粘贴到 Xshell.exe。
+; 4. 如果当前应用为 Notepad3.exe，按 Alt＋F1，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Notepad3 Alt+F1.txt”，每一行为一个地址，如：“Clips.txt=e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Clips.txt”，弹出图形界面，可选择：Clips.txt，将“e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Clips.txt” 用 Notepad3.exe 用新的窗口打开。
 ; 预设默认为第一行。
 
 ; Total Commander, Cmder, Xshell 和 Notepad3 Alt+F1 快速命令
@@ -18,7 +18,7 @@ Global g_LastClickItem := ""
 ; Total Commander 热键
 #IfWinActive, ahk_class TTOTAL_CMD
 !F1::
-    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachment\Total Commander Ultima Prime Alt+F1.txt"
+    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Total Commander Ultima Prime Alt+F1.txt"
     g_GuiTitle := "Total Commander 快速跳转"
     g_AppType := "TC"
     ShowCommandSelector()
@@ -28,7 +28,7 @@ return
 ; Cmder 热键 - 使用更宽泛的窗口匹配
 #If WinActive("ahk_exe Cmder.exe") || WinActive("ahk_class VirtualConsoleClass") || WinActive("ahk_class ConsoleWindowClass")
 !F1::
-    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachment\Cmder Alt+F1.txt"
+    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Cmder Alt+F1.txt"
     g_GuiTitle := "Cmder 快速命令"
     g_AppType := "CMDER"
     ShowCommandSelector()
@@ -38,7 +38,7 @@ return
 ; Xshell 热键
 #IfWinActive, ahk_exe Xshell.exe
 !F1::
-    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachment\Xshell Alt+F1.txt"
+    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Xshell Alt+F1.txt"
     g_GuiTitle := "Xshell 快速命令"
     g_AppType := "XSHELL"
     ShowCommandSelector()
@@ -48,7 +48,7 @@ return
 ; Notepad3 热键
 #IfWinActive, ahk_exe Notepad3.exe
 !F1::
-    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachment\Notepad3 Alt+F1.txt"
+    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Notepad3 Alt+F1.txt"
     g_GuiTitle := "Notepad3 快速打开"
     g_AppType := "NOTEPAD3"
     ShowCommandSelector()
@@ -121,10 +121,10 @@ ShowCommandSelector()
     
     ; 构建列表项字符串，默认选中第一项
     ListItems := JoinArray(MenuItems, "|")
-    Gui, CommandSelector:Add, ListBox, w300 h200 vSelectedItem gOnItemSelect Choose1, %ListItems%
+    Gui, CommandSelector:Add, ListBox, w640 h480 vSelectedItem gOnItemSelect Choose1, %ListItems%
     
-    Gui, CommandSelector:Add, Button, w140 h35 Default gExecuteCommand, 执行命令
-    Gui, CommandSelector:Add, Button, x+20 w140 h35 gCancelSelector, 取消
+    Gui, CommandSelector:Add, Button, w150 h35 Default gExecuteCommand, 执行命令
+    Gui, CommandSelector:Add, Button, x+20 w150 h35 gCancelSelector, 取消
     Gui, CommandSelector:Show, , %g_GuiTitle%
     return
 }

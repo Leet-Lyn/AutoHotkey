@@ -4,7 +4,7 @@
 ; Alt＋C 读取剪贴板记录并选择
 !c::
     WinGet, activeHwnd, ID, A
-    clipsFile := "e:\Documents\Creations\Scripts\Attachment\Clips.txt"
+    clipsFile := "e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Clips.txt"
     
     ; 检查文件是否存在
     IfNotExist, %clipsFile%
