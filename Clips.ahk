@@ -1,7 +1,7 @@
 ﻿; 请帮我写个 Autohotkey 脚本。
-; 当我按下 Alt＋C，读取并显示当前目录下Clips.txt。根据后续选择写入剪贴板。再触发一次 Ctrl＋V，粘贴。
+; 当我按下 Alt + C，读取并显示当前目录下 Clips.txt。根据后续选择写入剪贴板。再触发一次 Ctrl＋V，粘贴。
 
-; Alt＋C 读取剪贴板记录并选择
+; Alt + C 读取剪贴板记录并选择
 !c::
     WinGet, activeHwnd, ID, A
     clipsFile := "e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Clips.txt"

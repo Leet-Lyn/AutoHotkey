@@ -1,5 +1,29 @@
 ﻿; 请帮我写个 Autohotkey 脚本。
 
+; ==================================================
+; 按住 左 Alt 再按以下键，实现方向/翻页/首尾操作
+; 不会触发输入法或系统菜单，按住期间可连续切换字母
+; ==================================================
+
+; 方向键
+LAlt & a::Send {Left}
+LAlt & d::Send {Right}
+LAlt & w::Send {Up}
+LAlt & s::Send {Down}
+
+; 行首 / 行尾
+LAlt & q::Send {Home}
+LAlt & e::Send {End}
+
+; 上一页 / 下一页
+LAlt & r::Send {PgUp}
+LAlt & f::Send {PgDn}
+
+; 可选：屏蔽单独按左 Alt 时激活系统菜单栏（不影响组合键）
+; 若不需要此行为，请注释或删除下行
+; LAlt::return
+
+
 ; 鼠标前进键 (XButton2)，映射为 Ctrl 键。
 XButton2::Send {Ctrl Down}
 XButton2 Up::Send {Ctrl Up}

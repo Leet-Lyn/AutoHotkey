@@ -1,24 +1,24 @@
 ﻿; 请帮我写个 Autohotkey 脚本。
-; 1. 如果当前应用为 Total Commander，按 Alt＋F1，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Total Commander Ultima Prime Alt+F1.txt”，每一行为一个地址，如：“Downloads=d:\Downloads\”，弹出图形界面，可选择：Downloads，将“d:\Downloads\”写入参数，运行命令：“"d:\ProApps\Total Commander Ultima Prime\TOTALCMD64.EXE" /S %1”。目的是在激活到一栏（Total Commander 有两栏）打开“d:\Downloads\”。
-; 2. 如果当前应用为 Cmder.exe，按 Alt＋F1，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Cmder Alt+F1.txt”，每一行为一个命令，如：“cd e:\Documents\Creations\Scripts\Python\”，弹出图形界面，可选择：“cd e:\Documents\Creations\Scripts\Python\”，将其写入剪贴板，粘贴到 Cmder.exe。
-; 3. 如果当前应用为 Xshell.exe，按 Alt＋F1，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Xshell Alt+F1.txt”，每一行为一个命令，如：“docker compose up -d”，弹出图形界面，可选择：“docker compose up -d”，将其写入剪贴板，粘贴到 Xshell.exe。
-; 4. 如果当前应用为 Notepad3.exe，按 Alt＋F1，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Notepad3 Alt+F1.txt”，每一行为一个地址，如：“Clips.txt=e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Clips.txt”，弹出图形界面，可选择：Clips.txt，将“e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Clips.txt” 用 Notepad3.exe 用新的窗口打开。
+; 1. 如果当前应用为 Total Commander，按 Alt＋X，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Total Commander Ultima Prime Shortcut.txt”，每一行为一个地址，如：“Downloads=d:\Downloads\”，弹出图形界面，可选择：Downloads，将“d:\Downloads\”写入参数，运行命令：“"d:\ProApps\Total Commander Ultima Prime\TOTALCMD64.EXE" /S %1”。目的是在激活到一栏（Total Commander 有两栏）打开“d:\Downloads\”。
+; 2. 如果当前应用为 Cmder.exe，按 Alt＋X，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Cmder Shortcut.txt”，每一行为一个命令，如：“cd e:\Documents\Creations\Scripts\Python\”，弹出图形界面，可选择：“cd e:\Documents\Creations\Scripts\Python\”，将其写入剪贴板，粘贴到 Cmder.exe。
+; 3. 如果当前应用为 Xshell.exe，按 Alt＋X，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Xshell Shortcut.txt”，每一行为一个命令，如：“docker compose up -d”，弹出图形界面，可选择：“docker compose up -d”，将其写入剪贴板，粘贴到 Xshell.exe。
+; 4. 如果当前应用为 Notepad4.exe，按 Alt＋X，则弹出图形界面。读取“e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Notepad4 Shortcut.txt”，每一行为一个地址，如：“Clips.txt=e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Clips.txt”，弹出图形界面，可选择：Clips.txt，将“e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Clips.txt” 用 Notepad4.exe 用新的窗口打开。
 ; 预设默认为第一行。
 
-; Total Commander, Cmder, Xshell 和 Notepad3 Alt+F1 快速命令
+; Total Commander, Cmder, Xshell 和 Notepad4 Alt+F1 快速命令
 
 ; 全局变量
 Global g_Commands := {}
 Global g_ConfigFile := ""
 Global g_GuiTitle := ""
-Global g_AppType := "" ; "TC", "CMDER", "XSHELL", "NOTEPAD3"
+Global g_AppType := "" ; "TC", "CMDER", "XSHELL", "NOTEPAD4"
 Global g_LastClickTime := 0
 Global g_LastClickItem := ""
 
 ; Total Commander 热键
 #IfWinActive, ahk_class TTOTAL_CMD
-!F1::
-    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Total Commander Ultima Prime Alt+F1.txt"
+!x::
+    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Total Commander Ultima Prime Shortcut.txt"
     g_GuiTitle := "Total Commander 快速跳转"
     g_AppType := "TC"
     ShowCommandSelector()
@@ -27,8 +27,8 @@ return
 
 ; Cmder 热键 - 使用更宽泛的窗口匹配
 #If WinActive("ahk_exe Cmder.exe") || WinActive("ahk_class VirtualConsoleClass") || WinActive("ahk_class ConsoleWindowClass")
-!F1::
-    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Cmder Alt+F1.txt"
+!x::
+    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Cmder Shortcut.txt"
     g_GuiTitle := "Cmder 快速命令"
     g_AppType := "CMDER"
     ShowCommandSelector()
@@ -37,20 +37,20 @@ return
 
 ; Xshell 热键
 #IfWinActive, ahk_exe Xshell.exe
-!F1::
-    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Xshell Alt+F1.txt"
+!x::
+    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Xshell Shortcut.txt"
     g_GuiTitle := "Xshell 快速命令"
     g_AppType := "XSHELL"
     ShowCommandSelector()
 return
 #IfWinActive
 
-; Notepad3 热键
-#IfWinActive, ahk_exe Notepad3.exe
-!F1::
-    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Notepad3 Alt+F1.txt"
-    g_GuiTitle := "Notepad3 快速打开"
-    g_AppType := "NOTEPAD3"
+; Notepad4 热键
+#IfWinActive, ahk_exe Notepad4.exe
+!x::
+    g_ConfigFile := "e:\Documents\Creations\Scripts\Attachments\AutoHotkey\Notepad4 Shortcut.txt"
+    g_GuiTitle := "Notepad4 快速打开"
+    g_AppType := "NOTEPAD4"
     ShowCommandSelector()
 return
 #IfWinActive
@@ -200,11 +200,11 @@ ExecuteCommand:
         Sleep, 100 ; 等待窗口激活
         Send, ^v ; 粘贴命令（不自动按回车，允许用户修改）
     }
-    else if (g_AppType = "NOTEPAD3")
+    else if (g_AppType = "NOTEPAD4")
     {
-        ; Notepad3: 用新窗口打开文件
-        Notepad3Exe := "d:\ProApps\Notepad3\Notepad3.exe"
-        Run, "%Notepad3Exe%" "%Command%"
+        ; Notepad4: 用新窗口打开文件
+        Notepad4Exe := "d:\ProApps\Notepad4\Notepad4.exe"
+        Run, "%Notepad4Exe%" "%Command%"
     }
     
     ; 关闭GUI
