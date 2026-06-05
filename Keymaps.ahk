@@ -1,28 +1,35 @@
 ﻿; 请帮我写个 Autohotkey 脚本。
 
-; ==================================================
-; 按住 左 Alt 再按以下键，实现方向/翻页/首尾操作
-; 不会触发输入法或系统菜单，按住期间可连续切换字母
-; ==================================================
+; 使用 ~ 修饰符，让 Win 键的原始功能仍然部分保留
+~LWin Up::return
+; Win+V → Ctrl+Alt+Shift+V，触发 Ditto 快捷键。
+#v::
+    Send {Blind}{LWin Up}{RWin Up}
+    Send ^!+v
+return
+; Win+S → Ctrl+Alt+Shift+S，触发 PixPin 快捷键。
+#s::
+    Send {Blind}{LWin Up}{RWin Up}
+    Send ^!+s
+return
+; Win+S → Ctrl+Alt+Shift+S，触发 PixPin 快捷键。
+#m::
+    Send {Blind}{LWin Up}{RWin Up}
+    Send ^!+m
+return
 
-; 方向键
-LAlt & a::Send {Left}
-LAlt & d::Send {Right}
-LAlt & w::Send {Up}
-LAlt & s::Send {Down}
-
-; 行首 / 行尾
-LAlt & q::Send {Home}
-LAlt & e::Send {End}
-
-; 上一页 / 下一页
-LAlt & r::Send {PgUp}
-LAlt & f::Send {PgDn}
-
-; 可选：屏蔽单独按左 Alt 时激活系统菜单栏（不影响组合键）
-; 若不需要此行为，请注释或删除下行
-; LAlt::return
-
+; 禁用 CapsLock 的切换功能，使其成为纯修饰键
+SetCapsLockState, AlwaysOff
+CapsLock & a::Send {Left}
+CapsLock & d::Send {Right}
+CapsLock & w::Send {Up}
+CapsLock & s::Send {Down}
+CapsLock & q::Send {Home}
+CapsLock & e::Send {End}
+CapsLock & r::Send {PgUp}
+CapsLock & f::Send {PgDn}
+; 单独按下 CapsLock 不做任何事（已由 SetCapsLockState 阻止切换）
+CapsLock::return
 
 ; 鼠标前进键 (XButton2)，映射为 Ctrl 键。
 XButton2::Send {Ctrl Down}
